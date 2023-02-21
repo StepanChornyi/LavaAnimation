@@ -9,9 +9,9 @@ import LavaMesh from './lava-mesh';
 const canvas = document.getElementById("canvas3D");
 const gl = WEBGL_UTILS.getWebGlContext(canvas);
 
-console.log(canvas.background = 0x000000);
+// console.log(canvas.background = 0x000000);
 
-gl.clearColor(0.3, 0.3, 0.3, 1);
+gl.clearColor(0, 0, 0, 0);
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 canvas.width = window.innerWidth;
@@ -49,7 +49,7 @@ export default class Scene extends DisplayObject {
     // const dt = (- this.lastUpdateTime + (this.lastUpdateTime = performance.now())) * 0.06;//*0.06 same as 1/16.666666
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.colorMask(true, true, true, false);
+    gl.colorMask(true, true, true, true);
 
     this.background.render(camera);
     this.lavaMesh.render(camera);

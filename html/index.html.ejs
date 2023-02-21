@@ -55,24 +55,5 @@
 
 <div id="container">
   </div>
-
-<script>
-  const containerDiv =  document.getElementById('container');
-  const interval = setTimeout(() => clear(), 100);
-  
-  function clear(){
-    const divs = document.getElementsByTagName('DIV');
-
-    for (let i = 0; i < divs.length; i++) {
-     if(divs[i] === containerDiv||divs[i].parentElement ===containerDiv ){
-       continue;
-     }
-
-     divs[i].style.display = 'none';
-    }
-  };
-
-</script>
-
 </body>
 </html>
