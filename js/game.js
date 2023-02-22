@@ -1,6 +1,7 @@
 import { LoaderType, AssetManager, GameObject, AssetType, Asset, Debug } from 'black-engine';
 
-import Scene from './scene/scene';
+// import Scene from './scene/scene';
+import SceneNew from './SceneNew/SceneNew';
 
 export class Game extends GameObject {
   constructor() {
@@ -18,7 +19,7 @@ export class Game extends GameObject {
   onAssetsLoadded(m) {
     this.touchable = true;
 
-    this.add(new Scene());
+    this.add(new SceneNew());
   }
 }
 
