@@ -34,13 +34,17 @@ export default class Scene extends DisplayObject {
   }
 
   _init() {
-    this.lavaMesh = new LavaMesh(gl);
+    this.lavaMesh = new LavaMesh(gl, this);
     this.camera = new Camera(gl);
     this.background = new Background(gl);
   }
 
   onAdded() {
     this.addComponent(new ResizeActionComponent(this.onResize, this));
+
+    setTimeout(() => {
+      this.onResize();
+      }, 100);
   }
 
   onUpdate() {
@@ -67,5 +71,11 @@ export default class Scene extends DisplayObject {
     gl.viewport(0, 0, canvas.width, canvas.height);
 
     this.camera.aspect = canvas.width / canvas.height;
+
+    const stageBounds = Black.stage.getBounds();
+
+    this.x = stageBounds.left;
+    this.y = stageBounds.top;
+    this.scale = 1/Black.stage.scaleFactor;
   }
 }

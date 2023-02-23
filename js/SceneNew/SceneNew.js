@@ -4,6 +4,7 @@ import Camera from '../scene/camera';
 import WEBGL_UTILS from '../scene/utils/webgl-utils';
 import ResizeActionComponent from '../libs/resize-action-component';
 import Background from './Background/Background';
+import Lava from './Lava/Lava';
 
 export default class SceneNew extends DisplayObject {
     constructor() {
@@ -31,12 +32,11 @@ export default class SceneNew extends DisplayObject {
 
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        gl.colorMask(true, true, true, true);
 
         this.camera = new Camera(gl);
         this.background = new Background(gl);
+        this.lava = new Lava(gl);
     }
 
     onAdded() {
@@ -50,10 +50,9 @@ export default class SceneNew extends DisplayObject {
         // const dt = (- this.lastUpdateTime + (this.lastUpdateTime = performance.now())) * 0.06;//*0.06 same as 1/16.666666
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.colorMask(true, true, true, true);
 
         this.background.render(camera);
-        // this.lavaMesh.render(camera);
+        this.lava.render(camera);
     }
 
     onResize() {

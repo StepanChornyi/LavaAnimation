@@ -1,6 +1,6 @@
 import Mesh from './mesh';
 import WEBGL_UTILS from './utils/webgl-utils';
-import { Black, ColorHelper, Ease, Vector } from "black-engine";
+import { Black, ColorHelper, Ease, Graphics, Vector } from "black-engine";
 import UTween from '../libs/utween';
 
 import vs from "./lava.vs.glsl";
@@ -18,9 +18,10 @@ let tmpMat43D = { x: [], y: [], z: [] };
 
 const ground = [];
 const bubbles = [];
+const graphics = [];
 
 export default class WorldMesh extends Mesh {
-  constructor(gl_context) {
+  constructor(gl_context, container) {
     gl = gl_context;
 
     super(gl, WEBGL_UTILS.createProgram(gl, vs, fs));
@@ -44,7 +45,7 @@ export default class WorldMesh extends Mesh {
       this._animateGround(ground[i]);
     }
 
-    for (let i = 0; i < 48; i++) {
+    for (let i = 0; i < 24; i++) {
       bubbles.push({
         x: window.innerWidth * Math.random(),
         y: window.innerHeight * (Math.random() + 0.8),
@@ -54,6 +55,18 @@ export default class WorldMesh extends Mesh {
         vy: 0,
         tw: null
       });
+
+      const g = new Graphics();
+
+      g.fillStyle(0x00ff00, 0.5);
+      g.beginPath();
+      g.circle(0, 0, 1);
+      g.closePath();
+      g.fill();
+
+      container.add(g);
+
+      graphics.push(g);
     }
   }
 
@@ -151,6 +164,10 @@ export default class WorldMesh extends Mesh {
         bubble.y = window.innerHeight + bubble.r * 2 + 100;
         bubble.s = 1;
       }
+
+      graphics[i].x = bubbles[i].x;
+      graphics[i].y = bubbles[i].y;
+      graphics[i].scale = bubbles[i].r * bubbles[i].s;
 
       const matIndex = i % 16;
 
