@@ -19,7 +19,8 @@ export class Game extends GameObject {
   onAssetsLoadded(m) {
     this.touchable = true;
 
-    this.add(new Scene());
+    // this.add(new Scene());
+    this.add(new SceneNew());
   }
 }
 

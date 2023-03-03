@@ -4,7 +4,7 @@ import Camera from '../scene/camera';
 import WEBGL_UTILS from '../scene/utils/webgl-utils';
 import ResizeActionComponent from '../libs/resize-action-component';
 import Background from './Background/Background';
-import Lava from './Lava/Lava';
+import LavaMesh from './Lava/LavaMesh';
 
 export default class SceneNew extends DisplayObject {
     constructor() {
@@ -28,6 +28,8 @@ export default class SceneNew extends DisplayObject {
         const canvas = this.canvas = document.getElementById("canvas3D");
         const gl = this.gl = WEBGL_UTILS.getWebGlContext(canvas);
 
+        this.viewMatrix = new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]);
+
         // console.log(canvas.background = 0x000000);
 
         gl.clearColor(0, 0, 0, 0);
@@ -36,14 +38,28 @@ export default class SceneNew extends DisplayObject {
 
         this.camera = new Camera(gl);
         this.background = new Background(gl);
-        this.lava = new Lava(gl);
+
+        const count = 30;
+
+        this.lavas = [];
+
+
+        for (let i = 0; i < count; i++) {
+            this.lavas.push(new LavaMesh(gl));
+        }
+        
+    }
+
+    _updateViewMatrix() {
+        this.viewMatrix[0] = 1 / this.gl.canvas.width;
+        this.viewMatrix[4] = 1 / this.gl.canvas.height;
     }
 
     onAdded() {
         this.addComponent(new ResizeActionComponent(this.onResize, this));
     }
 
-    onUpdate() {
+    onRender() {
         const camera = this.camera;
         const gl = this.gl;
 
@@ -51,8 +67,13 @@ export default class SceneNew extends DisplayObject {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        this.background.render(camera);
-        this.lava.render(camera);
+        this._updateViewMatrix();
+
+        this.background.render(this.viewMatrix);
+
+        for (let i = 0; i < this.lavas.length; i++) {
+            this.lavas[i].render(this.viewMatrix);
+        }
     }
 
     onResize() {

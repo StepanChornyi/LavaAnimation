@@ -1,83 +1,20 @@
-import { ColorHelper } from "black-engine";
-import Mesh from "../../scene/mesh";
-import WEBGL_UTILS from "../../scene/utils/webgl-utils";
+import BaseRectMesh from "../BaseRectMesh/BaseRectMesh";
 
-import vs from "./background.vs.glsl";
-import fs from "./background.fs.glsl";
+const topColor = 0xb13d3d;
+const bottomColor = 0x32146e;
 
-let gl = null;
+export default class Background extends BaseRectMesh {
+  constructor(gl) {
+    super(gl);
 
-const topColor = normalizeColor(ColorHelper.hex2rgb(0x151111));
-// const bottomColor = normalizeColor(ColorHelper.hex2rgb(0x2e1607));
-const bottomColor = normalizeColor(ColorHelper.hex2rgb(0xa83232));
-
-export default class Background extends Mesh {
-  constructor(gl_context) {
-    gl = gl_context;
-
-    super(gl, WEBGL_UTILS.createProgram(gl, vs, fs));
-
-    this.vertices.push(
-      1, 1, topColor.r, topColor.g, topColor.b,
-      -1, 1, topColor.r, topColor.g, topColor.b,
-      1, -1, bottomColor.r, bottomColor.g, bottomColor.b,
-      -1, -1, bottomColor.r, bottomColor.g, bottomColor.b,
-    );
-
-    this.indices.push(0, 1, 2, 1, 2, 3);
-
-    this.drawBuffersData();
+    this.setSize(gl.canvas.width, gl.canvas.height);
+    this.setColors(topColor, topColor, bottomColor, bottomColor)
   }
 
-  updateAttribPointers() {
-    super.updateAttribPointers();
+  render(viewMatrix3x3) {
+    if (this.gl.canvas.width !== this.width || this.gl.canvas.height !== this.height) 
+      this.setSize(this.gl.canvas.width, this.gl.canvas.height);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-
-    const positionAttribLocation = gl.getAttribLocation(this.program, 'vertPosition');
-    const colorAttribLocation = gl.getAttribLocation(this.program, 'vertColor');
-
-    gl.vertexAttribPointer(
-      positionAttribLocation,
-      2,
-      gl.FLOAT,
-      gl.FALSE,
-      5 * Float32Array.BYTES_PER_ELEMENT,
-      0
-    );
-
-    gl.vertexAttribPointer(
-      colorAttribLocation,
-      3,
-      gl.FLOAT,
-      gl.FALSE,
-      5 * Float32Array.BYTES_PER_ELEMENT,
-      2 * Float32Array.BYTES_PER_ELEMENT
-    );
-
-    gl.enableVertexAttribArray(positionAttribLocation);
-    gl.enableVertexAttribArray(colorAttribLocation);
-
+    super.render(viewMatrix3x3);
   }
-
-  render(camera, count = this.indices.length, offset = 0) {
-    gl.useProgram(this.program);
-
-    this.updateAttribPointers();
-
-    gl.colorMask(true, true, true, false);
-    gl.disable(gl.DEPTH_TEST);
-    gl.disable(gl.CULL_FACE);
-    gl.disable(gl.BLEND);
-
-    gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, offset);
-  }
-}
-
-function normalizeColor(rgb) {
-  rgb.r = rgb.r / 255;
-  rgb.g = rgb.g / 255;
-  rgb.b = rgb.b / 255;
-
-  return rgb;
 }
