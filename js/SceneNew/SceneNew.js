@@ -39,7 +39,7 @@ export default class SceneNew extends DisplayObject {
         this.camera = new Camera(gl);
         this.background = new Background(gl);
 
-        const count = 30;
+        const count = 1;
 
         this.lavas = [];
 
