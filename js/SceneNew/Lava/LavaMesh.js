@@ -22,7 +22,7 @@ export default class LavaMesh extends BaseRectMesh {
         this.circles = [this.circle2];
 
         for (let i = 0; this.circles.length < 32; i++) {
-            const c = new Circle(gl.canvas.width * Math.random(), gl.canvas.height * Math.random(), 10 + Math.random() * 30);
+            const c = new Circle(gl.canvas.width * Math.random(), gl.canvas.height * Math.random(), 30 + Math.random() * 50);
 
             c.sx = (0.5 + Math.random() * 2) * (Math.random() < 0.5 ? -1 : 1);
             c.sy = (0.5 + Math.random() * 2) * (Math.random() < 0.5 ? -1 : 1);
@@ -149,6 +149,9 @@ export default class LavaMesh extends BaseRectMesh {
     }
 
     render(viewMatrix3x3) {
+        if (this.gl.canvas.width !== this.width || this.gl.canvas.height !== this.height)
+            this.setSize(this.gl.canvas.width, this.gl.canvas.height);
+
         super.render(viewMatrix3x3);
     }
 }

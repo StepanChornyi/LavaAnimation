@@ -10,6 +10,7 @@ uniform int circlesCount;
 uniform sampler2D sampler;
 
 const int count = 32;
+const float BD = 30.0;
 
 float blendDist(float a, float b, float k) {
     float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
@@ -58,7 +59,7 @@ void main() {
         if(i > maxIndex) {
             break;
         }
-        d[i] = blendDist(d[i], d[i + 1], 100.0);
+        d[i] = blendDist(d[i], d[i + 1], BD);
     }
 
     maxIndex = circlesCount - 3;
@@ -67,7 +68,7 @@ void main() {
         if(i > maxIndex) {
             break;
         }
-        d[i] = blendDist(d[i], d[i + 2], 100.0);
+        d[i] = blendDist(d[i], d[i + 2], BD);
     }
 
     maxIndex = circlesCount - 5;
@@ -76,7 +77,7 @@ void main() {
         if(i > maxIndex) {
             break;
         }
-        d[i] = blendDist(d[i], d[i + 4], 100.0);
+        d[i] = blendDist(d[i], d[i + 4], BD);
     }
 
     maxIndex = circlesCount - 9;
@@ -85,7 +86,7 @@ void main() {
         if(i > maxIndex) {
             break;
         }
-        d[i] = blendDist(d[i], d[i + 8], 100.0);
+        d[i] = blendDist(d[i], d[i + 8], BD);
     }
 
     maxIndex = circlesCount - 17;
@@ -94,7 +95,7 @@ void main() {
         if(i > maxIndex) {
             break;
         }
-        d[i] = blendDist(d[i], d[i + 16], 100.0);
+        d[i] = blendDist(d[i], d[i + 16], BD);
     }
 
     float baseDist = d[0];
