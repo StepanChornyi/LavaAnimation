@@ -43,11 +43,9 @@ export default class SceneNew extends DisplayObject {
 
         this.lavas = [];
 
-
         for (let i = 0; i < count; i++) {
             this.lavas.push(new LavaMesh(gl));
         }
-        
     }
 
     _updateViewMatrix() {

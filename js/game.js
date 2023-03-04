@@ -11,8 +11,6 @@ export class Game extends GameObject {
 
     assets.on('complete', this.onAssetsLoadded, this);
 
-    this.onAssetsLoadded();
-
     assets.loadQueue();
   }
 

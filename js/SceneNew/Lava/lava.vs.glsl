@@ -6,16 +6,17 @@ attribute vec2 vertNormal;
 
 varying vec3 fragColor;
 varying vec2 vertPos;
+varying vec2 glPos;
 
 uniform mat3 transform;
 uniform mat3 viewTransform;
 
 void main() {
-  vertPos = (transform * vec3(vertPosition.xy, 1.0)).xy;
+  vertPos = (transform * vec3(vertPosition.xy, 1.0)).xy + vertNormal*0.0;
 
   vec3 pos = viewTransform * transform * vec3(vertPosition.xy, 1.0);
 
-  vec2 glPos = (pos.xy * 2.0 - 1.0) * vec2(1.0, -1.0);
+  glPos = (pos.xy * 2.0 - 1.0) * vec2(1.0, -1.0);
 
   fragColor = vertColor;
 
