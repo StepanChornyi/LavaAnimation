@@ -17,23 +17,28 @@ export default class Lava {
 
         this.lavaMesh = new LavaMesh(gl, program);
 
+        this.transform = this.lavaMesh.transform;
+        this.transformIvs = this.transform.clone().invert();
+
         this.bitmapData = new BitmapData(DATA_TEXTURE_SIZE);
+
+        this.updateSizeAndTransform();
 
         this.circles = this._createCircles();
 
         this.lavaMesh.elementsCount = this.circles.length;
-        
+
         this.mouseControlledCircle = this.circles[0];
         this.mouseControlledCircle.r = 100;
         this.mouseControlledCircle.vx = 0;
         this.mouseControlledCircle.vy = 0;
 
         window.addEventListener('mousemove', e => {
-            this.mouseControlledCircle.x = e.clientX;
-            this.mouseControlledCircle.y = e.clientY;
-        })
+            const { x, y } = this.transformIvs.transformVector(new Vector(e.clientX, e.clientY));
 
-        // this.transform.skew(2, 1);
+            this.mouseControlledCircle.x = x;
+            this.mouseControlledCircle.y = y;
+        })
     }
 
     _createCircles() {
@@ -53,8 +58,10 @@ export default class Lava {
             {//to arrange in columns
                 const col = 30;
 
-                c.x = (i % col) * 50 + 50;
-                c.y = Math.floor(i / col) * 50 + 50;
+                const offset = this.lavaMesh.width / (col + 1)
+
+                c.x = (i % col) * offset + offset;
+                c.y = Math.floor(i / col) * offset + offset;
                 c.r = 1
             }
 
@@ -115,10 +122,24 @@ export default class Lava {
         gl.activeTexture(gl.TEXTURE0);
     }
 
+    updateSizeAndTransform() {
+        if (this.lavaMesh.width === window.innerHeight && this.lavaMesh.height === window.innerWidth)
+            return;
+
+        this.lavaMesh.setSize(window.innerHeight, window.innerWidth);
+
+        this.transform.setTranslation(window.innerHeight, 0);
+        this.transform.setRotation(-Math.PI * 0.5);
+
+        this.transformIvs.copyFrom(this.transform).invert();
+    }
+
     render(viewMatrix3x3) {
         this._updateMovement();
 
         this.updateCirclesData();
+
+        this.updateSizeAndTransform();
 
         this.lavaMesh.render(viewMatrix3x3);
     }

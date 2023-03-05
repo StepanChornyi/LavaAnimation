@@ -1,7 +1,7 @@
 precision mediump float;
 
 varying vec3 fragColor;
-varying vec2 vertPos;
+varying vec2 fragPos;
 varying vec2 uv;
 
 uniform vec3 sizeIvs;
@@ -49,7 +49,7 @@ float getDistanceToLava() {
             break;
         }
 
-        distances[i] = distToCircle(getCircle(0.0, float(i)), vertPos);
+        distances[i] = distToCircle(getCircle(0.0, float(i)), fragPos);
 
         if(distances[i] <= 0.0) {
             return distances[i];
@@ -177,8 +177,9 @@ void setFragColor(float lavaDist) {
         gl_FragColor = vec4(col, glowFactor);
     } else {
         // gl_FragColor = texture2D(sampler, (glPos+1.0)*0.5);
+        gl_FragColor = vec4(fragColor, 0.2);
 
-        discard;
+        // discard;
     }
 }
 
