@@ -2,7 +2,7 @@ precision mediump float;
 
 varying vec3 fragColor;
 varying vec2 vertPos;
-varying vec2 glPos;
+varying vec2 uv;
 
 uniform vec3 sizeIvs;
 uniform int circlesCount;
@@ -10,7 +10,7 @@ uniform int circlesCount;
 uniform sampler2D sampler;
 
 const int count = 128;
-const float blendDistFactor = 50.0;
+const float blendDistFactor = 100.0;
 
 float blendDist(float a, float b, float k) {
     float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
@@ -29,8 +29,8 @@ vec4 getTextel(vec2 pos) {
 vec3 getCircle(float xX, float yY) {
     vec4 t1 = getTextel(vec2(xX * 2.0, yY));
     vec4 t2 = getTextel(vec2(xX * 2.0 + 1.0, yY));
-    float x = dot(t1.rg, vec2(255.0, 255.0 * 255.0)) * sizeIvs.z;
-    float y = dot(t2.rg, vec2(255.0, 255.0 * 255.0)) * sizeIvs.z;
+    float x = dot(t1.rg, vec2(255.0, 65025.0)) * sizeIvs.z;
+    float y = dot(t2.rg, vec2(255.0, 65025.0)) * sizeIvs.z;
     float r = t1.b * 255.0;
 
     return vec3(x, y, r);
@@ -41,9 +41,8 @@ float quadraticOutEase(float k) {
 }
 
 float getDistanceToLava() {
-    int maxIndex = circlesCount - 1;
-
     float distances[count];
+    int maxIndex = circlesCount - 1;
 
     for(int i = 0; i < count; i++) {
         if(i > maxIndex) {
@@ -167,20 +166,20 @@ float getDistanceToLava() {
 void setFragColor(float lavaDist) {
     float glowSize = 3.5;
     float bloomSize = 0.0;
-    float colorHeightMix = (glPos.y + 1.0) * 0.5;
+    float colorHeightMix = (uv.y + 1.0) * 0.5;
 
     vec4 glowColorBottom = vec4(0.94, 0.52, 0.1, 1.0);
     vec4 glowColorTop = vec4(0.89, 0.2, 0.27, 1.0);
 
     if(lavaDist < 0.0) {
-        gl_FragColor = mix(glowColorBottom, glowColorTop, colorHeightMix);
+        gl_FragColor = vec4(fragColor, 1.0); //mix(glowColorBottom, glowColorTop, colorHeightMix);
     } else if(lavaDist <= glowSize) {
         float glowFactor = quadraticOutEase(1.0 - lavaDist / glowSize);
 
         vec4 colorTop = vec4(0.85098, 0.03921, 0.08627, glowFactor);
         vec4 colorBot = vec4(0.850, 0.0425, 0.460, glowFactor);
 
-        vec4 glowColor = mix(mix(colorTop, colorBot, colorHeightMix), mix(glowColorBottom, glowColorTop, colorHeightMix), glowFactor);
+        vec4 glowColor = mix(mix(colorTop, colorBot, colorHeightMix), vec4(fragColor, 1.0), glowFactor);
 
         gl_FragColor = glowColor;
     } else if(lavaDist <= bloomSize) {

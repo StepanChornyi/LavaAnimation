@@ -1,4 +1,5 @@
 import { CanvasDriver, Input, Engine, StageScaleMode } from "black-engine";
+import { FPS_METER } from "./animationConfig";
 import { Game } from "./game";
 
 document.addEventListener('contextmenu', e => e.preventDefault());
@@ -23,7 +24,7 @@ engine.stage.setSize(900, 500);
 // Makes stage always centered
 engine.stage.scaleMode = StageScaleMode.LETTERBOX;
 
-
-
-/* jshint ignore:start */
-(function () { var script = document.createElement('script'); script.onload = function () { var stats = new Stats(); document.body.appendChild(stats.dom); requestAnimationFrame(function loop() { stats.update(); requestAnimationFrame(loop) }); }; script.src = '//mrdoob.github.io/stats.js/build/stats.min.js'; document.head.appendChild(script); })()
+if (FPS_METER) {
+    /* jshint ignore:start */
+    (function () { var script = document.createElement('script'); script.onload = function () { var stats = new Stats(); document.body.appendChild(stats.dom); requestAnimationFrame(function loop() { stats.update(); requestAnimationFrame(loop) }); }; script.src = '//mrdoob.github.io/stats.js/build/stats.min.js'; document.head.appendChild(script); })()
+}

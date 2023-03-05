@@ -5,6 +5,7 @@ import WEBGL_UTILS from '../scene/utils/webgl-utils';
 import ResizeActionComponent from '../libs/resize-action-component';
 import Background from './Background/Background';
 import LavaMesh from './Lava/LavaMesh';
+import Lava from './Lava/Lava';
 
 export default class SceneNew extends DisplayObject {
     constructor() {
@@ -44,7 +45,7 @@ export default class SceneNew extends DisplayObject {
         this.lavas = [];
 
         for (let i = 0; i < count; i++) {
-            this.lavas.push(new LavaMesh(gl));
+            this.lavas.push(new Lava(gl));
         }
     }
 

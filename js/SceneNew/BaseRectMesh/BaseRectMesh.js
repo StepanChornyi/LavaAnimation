@@ -60,10 +60,10 @@ export default class BaseRectMesh extends BaseMesh {
         const [c0, c1, c2, c3] = this.colors;
 
         this.vertices = [
-            0, 0, c0.r, c0.g, c0.b, -1, 1,
+            0, 0, c0.r, c0.g, c0.b, 0, 1,
             this.width, 0, c1.r, c1.g, c1.b, 1, 1,
-            this.width, this.height, c2.r, c2.g, c2.b, 1, -1,
-            0, this.height, c3.r, c3.g, c3.b, -1, -1
+            this.width, this.height, c2.r, c2.g, c2.b, 1, 0,
+            0, this.height, c3.r, c3.g, c3.b, 0, 0
         ];
 
         this.drawBuffersData();
