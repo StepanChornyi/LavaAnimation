@@ -9,8 +9,8 @@ uniform int circlesCount;
 
 uniform sampler2D sampler;
 
-const int count = 32;
-const float BD = 30.0;
+const int count = 128;
+const float blendDistFactor = 50.0;
 
 float blendDist(float a, float b, float k) {
     float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
@@ -40,17 +40,25 @@ float quadraticOutEase(float k) {
     return k * (2.0 - k);
 }
 
-void main() {
+float getDistanceToLava() {
     int maxIndex = circlesCount - 1;
 
-    float d[count];
+    float distances[count];
 
     for(int i = 0; i < count; i++) {
         if(i > maxIndex) {
             break;
         }
 
-        d[i] = distToCircle(getCircle(0.0, float(i)), vertPos);
+        distances[i] = distToCircle(getCircle(0.0, float(i)), vertPos);
+
+        if(distances[i] <= 0.0) {
+            return distances[i];
+        }
+    }
+
+    if(circlesCount < 2) {
+        return distances[0];
     }
 
     maxIndex = circlesCount - 2;
@@ -59,7 +67,11 @@ void main() {
         if(i > maxIndex) {
             break;
         }
-        d[i] = blendDist(d[i], d[i + 1], BD);
+        distances[i] = blendDist(distances[i], distances[i + 1], blendDistFactor);
+    }
+
+    if(circlesCount < 3) {
+        return distances[0];
     }
 
     maxIndex = circlesCount - 3;
@@ -68,7 +80,11 @@ void main() {
         if(i > maxIndex) {
             break;
         }
-        d[i] = blendDist(d[i], d[i + 2], BD);
+        distances[i] = blendDist(distances[i], distances[i + 2], blendDistFactor);
+    }
+
+    if(circlesCount < 5) {
+        return distances[0];
     }
 
     maxIndex = circlesCount - 5;
@@ -77,7 +93,11 @@ void main() {
         if(i > maxIndex) {
             break;
         }
-        d[i] = blendDist(d[i], d[i + 4], BD);
+        distances[i] = blendDist(distances[i], distances[i + 4], blendDistFactor);
+    }
+
+    if(circlesCount < 9) {
+        return distances[0];
     }
 
     maxIndex = circlesCount - 9;
@@ -86,7 +106,11 @@ void main() {
         if(i > maxIndex) {
             break;
         }
-        d[i] = blendDist(d[i], d[i + 8], BD);
+        distances[i] = blendDist(distances[i], distances[i + 8], blendDistFactor);
+    }
+
+    if(circlesCount < 17) {
+        return distances[0];
     }
 
     maxIndex = circlesCount - 17;
@@ -95,51 +119,83 @@ void main() {
         if(i > maxIndex) {
             break;
         }
-        d[i] = blendDist(d[i], d[i + 16], BD);
+        distances[i] = blendDist(distances[i], distances[i + 16], blendDistFactor);
     }
 
-    float baseDist = d[0];
+    if(circlesCount < 33) {
+        return distances[0];
+    }
 
+    maxIndex = circlesCount - 33;
+
+    for(int i = 0; i < count - 1; i += 64) {
+        if(i > maxIndex) {
+            break;
+        }
+        distances[i] = blendDist(distances[i], distances[i + 32], blendDistFactor);
+    }
+
+    if(circlesCount < 65) {
+        return distances[0];
+    }
+
+    maxIndex = circlesCount - 65;
+
+    for(int i = 0; i < count - 1; i += 128) {
+        if(i > maxIndex) {
+            break;
+        }
+        distances[i] = blendDist(distances[i], distances[i + 64], blendDistFactor);
+    }
+
+    if(circlesCount < 129) {
+        return distances[0];
+    }
+
+    maxIndex = circlesCount - 129;
+
+    for(int i = 0; i < count - 1; i += 256) {
+        if(i > maxIndex) {
+            break;
+        }
+        distances[i] = blendDist(distances[i], distances[i + 128], blendDistFactor);
+    }
+
+    return distances[0];
+}
+
+void setFragColor(float lavaDist) {
     float glowSize = 3.5;
     float bloomSize = 0.0;
-    float hf = (glPos.y + 1.0) * 0.5;
+    float colorHeightMix = (glPos.y + 1.0) * 0.5;
 
-    vec3 glowColorBottom = vec3(0.94, 0.52, 0.1);
-    vec3 glowColorTop = vec3(0.89, 0.2, 0.27);
+    vec4 glowColorBottom = vec4(0.94, 0.52, 0.1, 1.0);
+    vec4 glowColorTop = vec4(0.89, 0.2, 0.27, 1.0);
 
-    if(baseDist < 0.0) {
-        gl_FragColor = vec4(mix(glowColorBottom, glowColorTop, hf), 1.0);
+    if(lavaDist < 0.0) {
+        gl_FragColor = mix(glowColorBottom, glowColorTop, colorHeightMix);
+    } else if(lavaDist <= glowSize) {
+        float glowFactor = quadraticOutEase(1.0 - lavaDist / glowSize);
 
-    } else if(baseDist <= glowSize) {
-        vec3 colTop = vec3(0.85098, 0.03921, 0.08627);
-        vec3 colBot = vec3(0.9490, 0.7960, 0.03921);
+        vec4 colorTop = vec4(0.85098, 0.03921, 0.08627, glowFactor);
+        vec4 colorBot = vec4(0.850, 0.0425, 0.460, glowFactor);
 
-        float glowFactor = quadraticOutEase(1.0 - baseDist / glowSize);
-        vec3 glowColor = mix(mix(colTop, colTop, hf), mix(glowColorBottom, glowColorTop, hf), glowFactor);
+        vec4 glowColor = mix(mix(colorTop, colorBot, colorHeightMix), mix(glowColorBottom, glowColorTop, colorHeightMix), glowFactor);
 
-        gl_FragColor = vec4(glowColor, glowFactor);
-    } else if(baseDist <= bloomSize) {
+        gl_FragColor = glowColor;
+    } else if(lavaDist <= bloomSize) {
         vec3 col = vec3(0.8313, 0.05882, 0.3921);
 
-        float glowFactor = quadraticOutEase(1.0 - baseDist / bloomSize) * 0.3;
+        float glowFactor = quadraticOutEase(1.0 - lavaDist / bloomSize) * 0.3;
 
         gl_FragColor = vec4(col, glowFactor);
     } else {
+        // gl_FragColor = texture2D(sampler, (glPos+1.0)*0.5);
+
         discard;
     }
+}
 
-    // float glowSize = 3.5;
-    // float bloomSize = 3.0;
-
-    // vec4 col = vec4(float(circlesCount) / 10.0, 0.85, 0.15, 1.0);
-
-    // if(g < 0.0) {
-    //     gl_FragColor = col;
-    // } else if(g < glowSize) {
-    //     float alpha = (1.0 - g / glowSize);
-
-    //     gl_FragColor = mix(vec4(0.97, 0.65, 0.15, 0.0), col, alpha);
-    // } else {
-    //     discard;
-    // }
+void main() {
+    setFragColor(getDistanceToLava());
 }

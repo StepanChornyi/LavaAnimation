@@ -21,11 +21,17 @@ export default class LavaMesh extends BaseRectMesh {
 
         this.circles = [this.circle2];
 
-        for (let i = 0; this.circles.length < 32; i++) {
-            const c = new Circle(gl.canvas.width * Math.random(), gl.canvas.height * Math.random(), 30 + Math.random() * 50);
+        for (let i = 0; this.circles.length < 128; i++) {
+            const c = new Circle(gl.canvas.width * Math.random(), gl.canvas.height * Math.random(),0);
 
             c.sx = (0.5 + Math.random() * 2) * (Math.random() < 0.5 ? -1 : 1);
             c.sy = (0.5 + Math.random() * 2) * (Math.random() < 0.5 ? -1 : 1);
+
+            const col = 30;
+
+            c.x = (i % col) * 50 + 50
+            c.y = Math.floor(i / col) * 50 + 50
+            c.r = 1
 
             this.circles.push(c);
         }
@@ -55,7 +61,6 @@ export default class LavaMesh extends BaseRectMesh {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, ctx.canvas);
         gl.bindTexture(gl.TEXTURE_2D, null);
 
-
         window.addEventListener('mousemove', e => {
             this.circle2.x = e.clientX;
             this.circle2.y = e.clientY;
@@ -79,9 +84,9 @@ export default class LavaMesh extends BaseRectMesh {
         const r = Math.round(circle.r);
 
         const xR = (x) & 0xff;
-        const xG = (x >> 8) & 0xff
+        const xG = (x >> 8) & 0xff;
         const yR = (y) & 0xff;
-        const yG = (y >> 8) & 0xff
+        const yG = (y >> 8) & 0xff;
         const rB = (r) & 0xff;
 
         // console.log(Math.round((circle.x)), r, g, r + g * 255);
@@ -121,7 +126,7 @@ export default class LavaMesh extends BaseRectMesh {
     setUniforms(viewMatrix3x3) {
         super.setUniforms(viewMatrix3x3);
 
-        this._updateMovement();
+        // this._updateMovement();
 
         for (let i = 0; i < this.circles.length; i++) {
             this.setCircle(this.circles[i], i);
