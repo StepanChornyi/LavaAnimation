@@ -9,7 +9,7 @@ uniform int circlesCount;
 
 uniform sampler2D sampler;
 
-const int count = 128;
+const int maxCount = 128;
 const float blendDistFactor = 100.0;
 
 float blendDist(float a, float b, float k) {
@@ -41,10 +41,10 @@ float quadraticOutEase(float k) {
 }
 
 float getDistanceToLava() {
-    float distances[count];
+    float distances[maxCount];
     int maxIndex = circlesCount - 1;
 
-    for(int i = 0; i < count; i++) {
+    for(int i = 0; i < maxCount; i++) {
         if(i > maxIndex) {
             break;
         }
@@ -62,7 +62,7 @@ float getDistanceToLava() {
 
     maxIndex = circlesCount - 2;
 
-    for(int i = 0; i < count - 1; i += 2) {
+    for(int i = 0; i < maxCount - 1; i += 2) {
         if(i > maxIndex) {
             break;
         }
@@ -75,7 +75,7 @@ float getDistanceToLava() {
 
     maxIndex = circlesCount - 3;
 
-    for(int i = 0; i < count - 1; i += 4) {
+    for(int i = 0; i < maxCount - 1; i += 4) {
         if(i > maxIndex) {
             break;
         }
@@ -88,7 +88,7 @@ float getDistanceToLava() {
 
     maxIndex = circlesCount - 5;
 
-    for(int i = 0; i < count - 1; i += 8) {
+    for(int i = 0; i < maxCount - 1; i += 8) {
         if(i > maxIndex) {
             break;
         }
@@ -101,7 +101,7 @@ float getDistanceToLava() {
 
     maxIndex = circlesCount - 9;
 
-    for(int i = 0; i < count - 1; i += 16) {
+    for(int i = 0; i < maxCount - 1; i += 16) {
         if(i > maxIndex) {
             break;
         }
@@ -114,7 +114,7 @@ float getDistanceToLava() {
 
     maxIndex = circlesCount - 17;
 
-    for(int i = 0; i < count - 1; i += 32) {
+    for(int i = 0; i < maxCount - 1; i += 32) {
         if(i > maxIndex) {
             break;
         }
@@ -127,7 +127,7 @@ float getDistanceToLava() {
 
     maxIndex = circlesCount - 33;
 
-    for(int i = 0; i < count - 1; i += 64) {
+    for(int i = 0; i < maxCount - 1; i += 64) {
         if(i > maxIndex) {
             break;
         }
@@ -140,24 +140,11 @@ float getDistanceToLava() {
 
     maxIndex = circlesCount - 65;
 
-    for(int i = 0; i < count - 1; i += 128) {
+    for(int i = 0; i < maxCount - 1; i += 128) {
         if(i > maxIndex) {
             break;
         }
         distances[i] = blendDist(distances[i], distances[i + 64], blendDistFactor);
-    }
-
-    if(circlesCount < 129) {
-        return distances[0];
-    }
-
-    maxIndex = circlesCount - 129;
-
-    for(int i = 0; i < count - 1; i += 256) {
-        if(i > maxIndex) {
-            break;
-        }
-        distances[i] = blendDist(distances[i], distances[i + 128], blendDistFactor);
     }
 
     return distances[0];
