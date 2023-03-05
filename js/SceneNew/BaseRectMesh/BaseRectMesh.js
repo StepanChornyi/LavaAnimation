@@ -91,7 +91,7 @@ export default class BaseRectMesh extends BaseMesh {
 
         const positionAttribLocation = gl.getAttribLocation(this.program, 'vertPosition');
         const colorAttribLocation = gl.getAttribLocation(this.program, 'vertColor');
-        const normalAttribLocation = gl.getAttribLocation(this.program, 'vertNormal');
+        const uvAttribLocation = gl.getAttribLocation(this.program, 'vertUv');
 
         gl.vertexAttribPointer(
             positionAttribLocation,
@@ -112,7 +112,7 @@ export default class BaseRectMesh extends BaseMesh {
         );
 
         gl.vertexAttribPointer(
-            normalAttribLocation,
+            uvAttribLocation,
             2,
             gl.FLOAT,
             gl.FALSE,
@@ -122,7 +122,7 @@ export default class BaseRectMesh extends BaseMesh {
 
         gl.enableVertexAttribArray(positionAttribLocation);
         gl.enableVertexAttribArray(colorAttribLocation);
-        gl.enableVertexAttribArray(normalAttribLocation);
+        gl.enableVertexAttribArray(uvAttribLocation);
     }
 
     setUniforms(viewMatrix3x3) {
