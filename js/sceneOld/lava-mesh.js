@@ -1,5 +1,5 @@
 import Mesh from './mesh';
-import WEBGL_UTILS from './utils/webgl-utils';
+import WEBGL_UTILS from '../WebGL/WebglUtils';
 import { Black, ColorHelper, Ease, Graphics, Vector } from "black-engine";
 import UTween from '../libs/utween';
 

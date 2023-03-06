@@ -1,11 +1,12 @@
-import { Component, DisplayObject, Black, Vector, Rectangle, Matrix, Circle, MathEx, ColorHelper } from 'black-engine';
+import { Component, DisplayObject, Black, Vector, Rectangle, Matrix, MathEx, ColorHelper } from 'black-engine';
 
-import WEBGL_UTILS from '../../scene/utils/webgl-utils';
+import Rect from '../../Math/Shapes/Rect';
+import Circle from '../../Math/Shapes/Circle';
 
 import BitmapData from './BitmapData';
 import { DATA_TEXTURE_SIZE } from './lavaConfig';
 
-import LavaMesh from './LavaMesh';
+import LavaMesh from './LavaMesh/LavaMesh';
 
 export default class Lava {
     constructor(gl) {
@@ -20,9 +21,7 @@ export default class Lava {
 
         this.bitmapData = new BitmapData(gl, DATA_TEXTURE_SIZE);
 
-        this.rect = new Rectangle(0, 0, 100, 100);
-
-        console.log(this.rect.x);
+        this.rect = new Rect(0, 0, 100, 100);
 
         this.shapes = [this.rect, ...this._createCircles()];
 
@@ -48,7 +47,7 @@ export default class Lava {
         const circles = [];
 
         for (let i = 0; circles.length < COUNT; i++) {
-            const c = new Rectangle(0, 0, 100, 100);
+            const c =Math.random()<0.5? new Circle(0, 0, 50) :new Rect(0, 0, 100, 100);
 
             c.vx = rndBtw(1, 2) * rndSign();
             c.vy = rndBtw(1, 2) * rndSign()
@@ -79,19 +78,16 @@ export default class Lava {
             if (isNaN(s.vx) || isNaN(s.vy))
                 continue;
 
-            const isC = s instanceof Circle;
-            const CR = (c, r) => (isC ? c : r);
-
-            if (s.x + CR(s.r, s.width) > this.lavaMesh.width)
+            if (s.right > this.lavaMesh.width)
                 s.vx = Math.abs(s.vx) * -1;
 
-            if (s.x < CR(s.r, 0))
+            if (s.left < 0)
                 s.vx = Math.abs(s.vx);
 
-            if (s.y + CR(s.r, s.height) > this.lavaMesh.height)
+            if (s.bottom > this.lavaMesh.height)
                 s.vy = Math.abs(s.vy) * -1;
 
-            if (s.y < CR(s.r, 0))
+            if (s.top < 0)
                 s.vy = Math.abs(s.vy);
 
             s.x += s.vx;
@@ -103,9 +99,9 @@ export default class Lava {
         for (let i = 0; i < this.shapes.length; i++) {
             const shape = this.shapes[i];
 
-            if (shape instanceof Circle) {
+            if (shape.isCircle) {
                 this.bitmapData.setCircle(this.shapes[i], 0, i);
-            } else {
+            } else if (shape.isRect) {
                 this.bitmapData.setRect(this.shapes[i], 0, i);
             }
         }

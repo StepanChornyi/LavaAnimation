@@ -1,81 +1,86 @@
 import { Component, DisplayObject, Black } from 'black-engine';
 
-import Camera from './camera';
-import WEBGL_UTILS from './utils/webgl-utils';
+import WEBGL_UTILS from '../WebGL/WebglUtils';
 import ResizeActionComponent from '../libs/resize-action-component';
-import Background from './background';
-import LavaMesh from './lava-mesh';
-
-const canvas = document.getElementById("canvas3D");
-const gl = WEBGL_UTILS.getWebGlContext(canvas);
-
-// console.log(canvas.background = 0x000000);
-
-gl.clearColor(0, 0, 0, 0);
-gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+import Background from './Background/Background';
+import Lava from './Lava/Lava';
 
 export default class Scene extends DisplayObject {
-  constructor() {
-    super();
+    constructor() {
+        super();
 
-    this.touchable = true;
+        this.touchable = true;
 
-    this.camera = null;
-    this.lavaMesh = null;
+        this.gl = null;
+        this.canvas = null;
+        this.lavaMesh = null;
 
-    this.background = null;
+        this.background = null;
 
-    this.lastUpdateTime = performance.now();
+        this.lastUpdateTime = performance.now();
 
-    this._init();
-  }
+        this._init();
+    }
 
-  _init() {
-    this.lavaMesh = new LavaMesh(gl, this);
-    this.camera = new Camera(gl);
-    this.background = new Background(gl);
-  }
+    _init() {
+        const canvas = this.canvas = document.getElementById("canvas3D");
+        const gl = this.gl = WEBGL_UTILS.getWebGlContext(canvas);
 
-  onAdded() {
-    this.addComponent(new ResizeActionComponent(this.onResize, this));
+        this.viewMatrix = new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]);
 
-    setTimeout(() => {
-      this.onResize();
-      }, 100);
-  }
+        // console.log(canvas.background = 0x000000);
 
-  onUpdate() {
-    const camera = this.camera;
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.colorMask(true, true, true, true);
 
-    // const dt = (- this.lastUpdateTime + (this.lastUpdateTime = performance.now())) * 0.06;//*0.06 same as 1/16.666666
+        this.background = new Background(gl);
 
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.colorMask(true, true, true, true);
+        const count = 1;
 
-    this.background.render(camera);
-    this.lavaMesh.render(camera);
-  }
+        this.lavas = [];
 
-  onResize() {
-    const scale = 1//0.25;
+        for (let i = 0; i < count; i++) {
+            this.lavas.push(new Lava(gl));
+        }
+    }
 
-    canvas.width = window.innerWidth * Black.device.pixelRatio * scale;
-    canvas.height = window.innerHeight * Black.device.pixelRatio * scale;
+    _updateViewMatrix() {
+        this.viewMatrix[0] = 1 / this.gl.canvas.width;
+        this.viewMatrix[4] = 1 / this.gl.canvas.height;
+    }
 
-    canvas.style.width = `${window.innerWidth}px`;
-    canvas.style.height = `${window.innerHeight}px`;
+    onAdded() {
+        this.addComponent(new ResizeActionComponent(this.onResize, this));
+    }
 
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    onRender() {
+        const gl = this.gl;
 
-    this.camera.aspect = canvas.width / canvas.height;
+        // const dt = (- this.lastUpdateTime + (this.lastUpdateTime = performance.now())) * 0.06;//*0.06 same as 1/16.666666
 
-    const stageBounds = Black.stage.getBounds();
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    this.x = stageBounds.left;
-    this.y = stageBounds.top;
-    this.scale = 1/Black.stage.scaleFactor;
-  }
+        this._updateViewMatrix();
+
+        this.background.render(this.viewMatrix);
+
+        for (let i = 0; i < this.lavas.length; i++) {
+            this.lavas[i].render(this.viewMatrix);
+        }
+    }
+
+    onResize() {
+        const scale = 1//0.25;
+        const canvas = this.canvas;
+        const gl = this.gl;
+
+        canvas.width = window.innerWidth * Black.device.pixelRatio * scale;
+        canvas.height = window.innerHeight * Black.device.pixelRatio * scale;
+
+        canvas.style.width = `${window.innerWidth}px`;
+        canvas.style.height = `${window.innerHeight}px`;
+
+        gl.viewport(0, 0, canvas.width, canvas.height);
+    }
 }

@@ -1,11 +1,11 @@
 import { Matrix, RGB, Vector } from "black-engine";
-import WEBGL_UTILS from "../../scene/utils/webgl-utils";
-import BaseMesh from "../BaseMesh";
+import WEBGL_UTILS from '../WebGL/WebglUtils';
+import Mesh from "../WebGL/Mesh";
 
 import vs from "./baseRect.vs.glsl";
 import fs from "./baseRect.fs.glsl";
 
-export default class BaseRectMesh extends BaseMesh {
+export default class RectMesh extends Mesh {
     constructor(gl, program = WEBGL_UTILS.createProgram(gl, vs, fs)) {
         super(gl, program);
 

@@ -70,10 +70,10 @@ export default class BitmapData {
     }
 
     setRect(rect, dataX, dataY) {
-        const x = numberTo2Bytes(rect.x + rect.width * 0.5);
-        const y = numberTo2Bytes(rect.y + rect.height * 0.5);
-        const w = numberTo2Bytes(rect.width * 0.5);
-        const h = numberTo2Bytes(rect.height * 0.5);
+        const x = numberTo2Bytes(rect.centerX);
+        const y = numberTo2Bytes(rect.centerY);
+        const w = numberTo2Bytes(rect.halfWidth);
+        const h = numberTo2Bytes(rect.halfHeight);
 
         this.setPixel(dataX, dataY, x[0], x[1], y[0], y[1]);
         this.setPixel(dataX + 1, dataY, w[0], w[1], h[0], h[1]);

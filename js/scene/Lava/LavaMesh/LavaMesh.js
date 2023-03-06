@@ -1,13 +1,12 @@
-import WEBGL_UTILS from '../../scene/utils/webgl-utils';
+import WEBGL_UTILS from '../../../WebGL/WebglUtils';
+import RectMesh from '../../../RectMesh/RectMesh';
 
-import BaseRectMesh from '../BaseRectMesh/BaseRectMesh';
-
-import { DATA_TEXTURE_SIZE_IVS, INT_SCALE_IVS } from './lavaConfig';
+import { DATA_TEXTURE_SIZE_IVS, INT_SCALE_IVS } from './../lavaConfig';
 
 import vs from "./lava.vs.glsl";
 import fs from "./lava.fs.glsl";
 
-export default class LavaMesh extends BaseRectMesh {
+export default class LavaMesh extends RectMesh {
     constructor(gl, program = LavaMesh.createProgram(gl)) {
         super(gl, program);
 

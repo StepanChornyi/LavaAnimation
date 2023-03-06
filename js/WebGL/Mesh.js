@@ -1,4 +1,4 @@
-export default class BaseMesh {
+export default class Mesh {
     constructor(gl, program) {
         this.gl = gl;
 

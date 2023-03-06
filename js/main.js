@@ -15,13 +15,10 @@ engine.start();
 engine.stage.setSize(900, 500);
 engine.stage.scaleMode = StageScaleMode.LETTERBOX;
 
-// Wroom, wroom!
 engine.start();
 
-// Set default stage size
 engine.stage.setSize(900, 500);
 
-// Makes stage always centered
 engine.stage.scaleMode = StageScaleMode.LETTERBOX;
 
 if (FPS_METER) {

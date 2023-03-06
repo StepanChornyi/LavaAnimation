@@ -1,4 +1,4 @@
-import BaseRectMesh from "../BaseRectMesh/BaseRectMesh";
+import BaseRectMesh from "../../RectMesh/RectMesh";
 
 const topColor = 0xb13d3d;
 const bottomColor = 0x32146e;

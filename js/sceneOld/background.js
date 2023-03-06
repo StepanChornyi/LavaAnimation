@@ -1,6 +1,6 @@
 import { ColorHelper } from "black-engine";
 import Mesh from "./mesh";
-import WEBGL_UTILS from "./utils/webgl-utils";
+import WEBGL_UTILS from "../WebGL/WebglUtils";
 
 const vsText = `
 precision mediump float;
