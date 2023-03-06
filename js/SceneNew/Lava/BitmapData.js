@@ -2,7 +2,11 @@ import { TEXTURE_DEBUG, FPS_METER } from "../../animationConfig";
 import { INT_SCALE } from "./lavaConfig";
 
 export default class BitmapData {
-    constructor(width, height = width) {
+    constructor(gl, width, height = width) {
+        this.gl = gl;
+
+        this.glTexture = this._createGlTexture();
+
         const canvas = this.canvas = document.createElement('canvas');
 
         canvas.width = width;
@@ -21,25 +25,58 @@ export default class BitmapData {
         }
     }
 
-    putImageData() {
-        this._ctx.putImageData(this._imgData, 0, 0);
+    _createGlTexture() {
+        const gl = this.gl;
+        const texture = gl.createTexture();
+
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+        gl.bindTexture(gl.TEXTURE_2D, null);
+
+        return texture;
+    }
+
+    updateAndBindTexture() {
+        const gl = this.gl;
+
+        gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, this._imgData.data);
+        gl.activeTexture(gl.TEXTURE0);
+
+        if (TEXTURE_DEBUG) {
+            const d = this._imgData.data;
+
+            for (let i = 0; i < d.length; i += 4) {
+                if (d[i] > 0 || d[i + 1] > 0 || d[i + 2] > 0) {
+                    d[i + 3] = 255;
+                }
+            }
+
+            this._ctx.putImageData(this._imgData, 0, 0);
+        }
     }
 
     setCircle(circle, dataX, dataY) {
-        const x = Math.round(circle.x * INT_SCALE);
-        const y = Math.round(circle.y * INT_SCALE);
-        const r = Math.round(circle.r);
+        const x = numberTo2Bytes(circle.x);
+        const y = numberTo2Bytes(circle.y);
+        const r = numberTo2Bytes(circle.r);
 
-        const xR = (x) & 0xff;
-        const xG = (x >> 8) & 0xff;
-        const yR = (y) & 0xff;
-        const yG = (y >> 8) & 0xff;
-        const rB = (r) & 0xff;
+        this.setPixel(dataX, dataY, x[0], x[1], y[0], y[1]);
+        this.setPixel(dataX + 1, dataY, r[0], r[1], 0, 0);
+    }
 
-        // console.log(Math.round((circle.x)), r, g, r + g * 255);
+    setRect(rect, dataX, dataY) {
+        const x = numberTo2Bytes(rect.x + rect.width * 0.5);
+        const y = numberTo2Bytes(rect.y + rect.height * 0.5);
+        const w = numberTo2Bytes(rect.width * 0.5);
+        const h = numberTo2Bytes(rect.height * 0.5);
 
-        this.setPixel(dataX, dataY, xR, xG, rB, 255);
-        this.setPixel(dataX + 1, dataY, yR, yG, 0, 255);
+        this.setPixel(dataX, dataY, x[0], x[1], y[0], y[1]);
+        this.setPixel(dataX + 1, dataY, w[0], w[1], h[0], h[1]);
     }
 
     setPixel(x, y, r, g, b, a) {
@@ -51,7 +88,21 @@ export default class BitmapData {
         this._imgData.data[i + 3] = a;
     }
 
+    get width() {
+        return this.canvas.width;
+    }
+
+    get height() {
+        return this.canvas.height;
+    }
+
     static get INT_SCALE() {
         return INT_SCALE;
     }
+}
+
+function numberTo2Bytes(num) {
+    num = Math.round(num * INT_SCALE);
+
+    return [num & 0xff, (num >> 8) & 0xff]
 }

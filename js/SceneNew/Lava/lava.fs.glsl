@@ -22,18 +22,30 @@ float distToCircle(vec3 circle, vec2 p) {
     return distance(p, circle.xy) - circle.z;
 }
 
+float distToRect(vec4 rect, vec2 p) {
+    vec2 o = abs(p - rect.xy) - rect.zw;
+
+    return length(max(o, 0.0)) + max(min(o.x, 0.0), min(o.y, 0.0));
+}
+
 vec4 getTextel(vec2 pos) {
     return texture2D(sampler, (pos + vec2(0.5, 0.5)) * sizeIvs.xy);
 }
 
-vec3 getCircle(float xX, float yY) {
+float int2bytesToFloat(vec2 int2bytes) {
+    return dot(int2bytes.xy, vec2(255.0, 65025.0)) * sizeIvs.z;
+}
+
+vec4 getShape(float xX, float yY) {
     vec4 t1 = getTextel(vec2(xX * 2.0, yY));
     vec4 t2 = getTextel(vec2(xX * 2.0 + 1.0, yY));
-    float x = dot(t1.rg, vec2(255.0, 65025.0)) * sizeIvs.z;
-    float y = dot(t2.rg, vec2(255.0, 65025.0)) * sizeIvs.z;
-    float r = t1.b * 255.0;
 
-    return vec3(x, y, r);
+    float x = int2bytesToFloat(t1.xy);
+    float y = int2bytesToFloat(t1.zw);
+    float w = int2bytesToFloat(t2.xy);
+    float h = int2bytesToFloat(t2.zw);
+
+    return vec4(x, y, w, h);
 }
 
 float quadraticOutEase(float k) {
@@ -49,7 +61,13 @@ float getDistanceToLava() {
             break;
         }
 
-        distances[i] = distToCircle(getCircle(0.0, float(i)), fragPos);
+        vec4 shape = getShape(0.0, float(i));
+
+        if(int(shape.w) == 0) {
+            distances[i] = distToCircle(shape.xyz, fragPos);
+        } else {
+            distances[i] = distToRect(shape, fragPos);
+        }
 
         if(distances[i] <= 0.0) {
             return distances[i];

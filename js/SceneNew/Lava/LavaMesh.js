@@ -13,7 +13,6 @@ export default class LavaMesh extends BaseRectMesh {
 
         this.elementsCount = 0;
 
-        this.setSize(gl.canvas.width, gl.canvas.height);
         this.setColors(0xde0404, 0xffff25, 0xcc0bcc, 0x2d08a6);
     }
 
@@ -34,8 +33,8 @@ export default class LavaMesh extends BaseRectMesh {
     }
 
     render(viewMatrix3x3) {
-        if (this.gl.canvas.width !== this.width || this.gl.canvas.height !== this.height)
-            this.setSize(this.gl.canvas.width, this.gl.canvas.height);
+        if (this.width === 0 || this.height === 0)
+            return console.warn(`Invalid mesh dimensions! width = ${this.width} | height = ${this.width}`);
 
         super.render(viewMatrix3x3);
     }

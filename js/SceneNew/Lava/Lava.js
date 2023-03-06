@@ -13,46 +13,47 @@ export default class Lava {
 
         const program = LavaMesh.createProgram(gl);
 
-        this._initTexture(gl);
-
         this.lavaMesh = new LavaMesh(gl, program);
 
         this.transform = this.lavaMesh.transform;
         this.transformIvs = this.transform.clone().invert();
 
-        this.bitmapData = new BitmapData(DATA_TEXTURE_SIZE);
+        this.bitmapData = new BitmapData(gl, DATA_TEXTURE_SIZE);
+
+        this.rect = new Rectangle(0, 0, 100, 100);
+
+        console.log(this.rect.x);
+
+        this.shapes = [this.rect, ...this._createCircles()];
+
+        this._initMouseControl(this.rect);
 
         this.updateSizeAndTransform();
+    }
 
-        this.circles = this._createCircles();
-
-        this.lavaMesh.elementsCount = this.circles.length;
-
-        this.mouseControlledCircle = this.circles[0];
-        this.mouseControlledCircle.r = 100;
-        this.mouseControlledCircle.vx = 0;
-        this.mouseControlledCircle.vy = 0;
+    _initMouseControl(shape) {
+        shape.vx = 0;
+        shape.vy = 0;
 
         window.addEventListener('mousemove', e => {
             const { x, y } = this.transformIvs.transformVector(new Vector(e.clientX, e.clientY));
 
-            this.mouseControlledCircle.x = x;
-            this.mouseControlledCircle.y = y;
-        })
+            shape.x = x - shape.width * 0.5;
+            shape.y = y - shape.height * 0.5;
+        });
     }
 
     _createCircles() {
-        const COUNT = 32;
+        const COUNT = 5;
         const circles = [];
 
         for (let i = 0; circles.length < COUNT; i++) {
-            const c = new Circle(0, 0, 50);
+            const c = new Rectangle(0, 0, 100, 100);
 
-            c.vx = (0.05 + Math.random() * 0.2) * (Math.random() < 0.5 ? -1 : 1);
-            c.vy = (0.05 + Math.random() * 0.2) * (Math.random() < 0.5 ? -1 : 1);
+            c.vx = rndBtw(1, 2) * rndSign();
+            c.vy = rndBtw(1, 2) * rndSign()
 
-
-            c.x = this.gl.canvas.width * Math.random();
+            c.x = this.gl.canvas.height * Math.random();
             c.y = this.gl.canvas.height * Math.random();
 
             {//to arrange in columns
@@ -60,9 +61,9 @@ export default class Lava {
 
                 const offset = this.lavaMesh.width / (col + 1)
 
-                c.x = (i % col) * offset + offset;
-                c.y = Math.floor(i / col) * offset + offset;
-                c.r = 1
+                // c.x = (i % col) * offset + offset;
+                // c.y = Math.floor(i / col) * offset + offset;
+                // c.r = 50
             }
 
             circles.push(c);
@@ -71,76 +72,76 @@ export default class Lava {
         return circles;
     }
 
-    _initTexture(gl) {
-        const texture = this._texture = gl.createTexture();
-
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-        gl.bindTexture(gl.TEXTURE_2D, null);
-    }
-
     _updateMovement() {
-        for (let i = 0; i < this.circles.length; i++) {
-            const c = this.circles[i];
+        for (let i = 0; i < this.shapes.length; i++) {
+            const s = this.shapes[i];
 
-            if (c.x + c.r > window.innerWidth) {
-                c.vx = Math.abs(c.vx) * -1;
-            }
+            if (isNaN(s.vx) || isNaN(s.vy))
+                continue;
 
-            if (c.x < c.r) {
-                c.vx = Math.abs(c.vx);
-            }
+            const isC = s instanceof Circle;
+            const CR = (c, r) => (isC ? c : r);
 
-            if (c.y + c.r > window.innerHeight) {
-                c.vy = Math.abs(c.vy) * -1;
-            }
+            if (s.x + CR(s.r, s.width) > this.lavaMesh.width)
+                s.vx = Math.abs(s.vx) * -1;
 
-            if (c.y < c.r) {
-                c.vy = Math.abs(c.vy);
-            }
+            if (s.x < CR(s.r, 0))
+                s.vx = Math.abs(s.vx);
 
-            c.x += c.vx;
-            c.y += c.vy;
+            if (s.y + CR(s.r, s.height) > this.lavaMesh.height)
+                s.vy = Math.abs(s.vy) * -1;
+
+            if (s.y < CR(s.r, 0))
+                s.vy = Math.abs(s.vy);
+
+            s.x += s.vx;
+            s.y += s.vy;
         }
     }
 
-    updateCirclesData() {
-        for (let i = 0; i < this.circles.length; i++) {
-            this.bitmapData.setCircle(this.circles[i], 0, i);
+    updateShapesData() {
+        for (let i = 0; i < this.shapes.length; i++) {
+            const shape = this.shapes[i];
+
+            if (shape instanceof Circle) {
+                this.bitmapData.setCircle(this.shapes[i], 0, i);
+            } else {
+                this.bitmapData.setRect(this.shapes[i], 0, i);
+            }
         }
-
-        this.bitmapData.putImageData();
-
-        const gl = this.gl;
-
-        gl.bindTexture(gl.TEXTURE_2D, this._texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.bitmapData.canvas);
-        gl.activeTexture(gl.TEXTURE0);
     }
 
     updateSizeAndTransform() {
-        if (this.lavaMesh.width === window.innerHeight && this.lavaMesh.height === window.innerWidth)
+        if (this.lavaMesh.width === window.innerHeight && this.lavaMesh.height === window.innerHeight)
             return;
 
-        this.lavaMesh.setSize(window.innerHeight, window.innerWidth);
+        this.lavaMesh.setSize(window.innerHeight, window.innerHeight);
 
         this.transform.setTranslation(window.innerHeight, 0);
         this.transform.setRotation(-Math.PI * 0.5);
 
         this.transformIvs.copyFrom(this.transform).invert();
+
+        this.lavaMesh.elementsCount = this.shapes.length;
     }
 
     render(viewMatrix3x3) {
         this._updateMovement();
 
-        this.updateCirclesData();
+        this.updateShapesData();
 
         this.updateSizeAndTransform();
 
+        this.bitmapData.updateAndBindTexture();
+
         this.lavaMesh.render(viewMatrix3x3);
     }
+}
+
+function rndBtw(a, b) {
+    return a + (b - a) * Math.random();
+}
+
+function rndSign() {
+    return Math.random() < 0.5 ? -1 : 1;
 }
