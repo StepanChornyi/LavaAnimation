@@ -1,7 +1,10 @@
 import BaseRectMesh from "../../RectMesh/RectMesh";
 
-const topColor = 0xb13d3d;
-const bottomColor = 0x32146e;
+// const topColor = 0xb13d3d;
+// const bottomColor = 0x32146e;
+
+const topColor = 0x151111;
+const bottomColor = 0x2e1607;
 
 export default class Background extends BaseRectMesh {
   constructor(gl) {

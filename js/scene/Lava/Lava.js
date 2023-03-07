@@ -16,6 +16,21 @@ export default class Lava {
 
         this.lavaMesh = new LavaMesh(gl, program);
 
+        this.canvas = document.createElement("canvas");
+
+        this.canvas.width = window.innerWidth * 0.5;
+        this.canvas.height = window.innerHeight * 0.5;
+
+        this.ctx = this.canvas.getContext("2d");
+
+        this.canvas.style.position = "absolute";
+        this.canvas.style.opacity = "0.3";
+        this.canvas.style.width = "100%";
+        this.canvas.style.height = "100%";
+        document.body.appendChild(this.canvas);
+
+        this.lavaMesh.setColors(0xf0851a, 0xf0851a, 0xe33345, 0xe33345);
+
         this.transform = this.lavaMesh.transform;
         this.transformIvs = this.transform.clone().invert();
 
@@ -31,8 +46,8 @@ export default class Lava {
     }
 
     _initMouseControl(shape) {
-        shape.vx = 0;
-        shape.vy = 0;
+        shape.x = window.innerWidth - shape.width;
+        shape.y = window.innerHeight - shape.height;
 
         window.addEventListener('mousemove', e => {
             const { x, y } = this.transformIvs.transformVector(new Vector(e.clientX, e.clientY));
@@ -43,11 +58,11 @@ export default class Lava {
     }
 
     _createCircles() {
-        const COUNT = 5;
+        const COUNT = 30;
         const circles = [];
 
         for (let i = 0; circles.length < COUNT; i++) {
-            const c =Math.random()<0.5? new Circle(0, 0, 50) :new Rect(0, 0, 100, 100);
+            const c = Math.random() < 0.5 ? new Circle(0, 0, 100) : new Rect(0, 0, 200, 200);
 
             c.vx = rndBtw(1, 2) * rndSign();
             c.vy = rndBtw(1, 2) * rndSign()
@@ -105,16 +120,60 @@ export default class Lava {
                 this.bitmapData.setRect(this.shapes[i], 0, i);
             }
         }
+
+        const ctx = this.ctx;
+
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.globalCompositeOperation = "lighter";
+        ctx.save()
+        ctx.scale(0.5, 0.5)
+
+        for (let i = 0; i < this.shapes.length; i++) {
+            const shape = this.shapes[i];
+
+            ctx.fillStyle = ColorHelper.intToRGBA(0x00ff00, 1)
+            ctx.beginPath();
+
+            if (shape.isCircle) {
+                ctx.arc(shape.x, shape.y, shape.r, 0, Math.PI * 2);
+            } else if (shape.isRect) {
+                ctx.rect(shape.x, shape.y, shape.width, shape.height);
+            }
+
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = ColorHelper.intToRGBA(0x0000ff, 1)
+            ctx.beginPath();
+
+            const blendDist = 100 * 0.75;
+
+            if (shape.isCircle) {
+                ctx.arc(shape.x, shape.y, shape.r + blendDist, 0, Math.PI * 2);
+            } else if (shape.isRect) {
+                ctx.rect(shape.x - blendDist, shape.y - blendDist, shape.width + blendDist * 2, shape.height + blendDist * 2);
+            }
+
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        ctx.restore()
+
     }
 
     updateSizeAndTransform() {
-        if (this.lavaMesh.width === window.innerHeight && this.lavaMesh.height === window.innerHeight)
+        if (this.lavaMesh.width === window.innerWidth && this.lavaMesh.height === window.innerHeight)
             return;
 
-        this.lavaMesh.setSize(window.innerHeight, window.innerHeight);
+        this.lavaMesh.setSize(window.innerWidth, window.innerHeight);
 
-        this.transform.setTranslation(window.innerHeight, 0);
-        this.transform.setRotation(-Math.PI * 0.5);
+        // this.transform.setTranslation(window.innerHeight, 0);
+        // this.transform.setRotation(-Math.PI * 0.5);
+
+
+        this.canvas.width = window.innerWidth * 0.5;
+        this.canvas.height = window.innerHeight * 0.5;
 
         this.transformIvs.copyFrom(this.transform).invert();
 

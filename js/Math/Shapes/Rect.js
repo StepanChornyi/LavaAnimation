@@ -34,6 +34,14 @@ export default class Rect extends Shape {
         return this.y + this.halfHeight;
     }
 
+    set centerX(cx) {
+        this.x = cx - this.halfWidth;
+    }
+
+    set centerY(cy) {
+        this.y = cy - this.halfHeight;
+    }
+
     get left() {
         return this.x;
     }
