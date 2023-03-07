@@ -101,8 +101,10 @@ export default class BitmapData {
     }
 }
 
+const IVS_255 = 1 / 255;
+
 function numberTo2Bytes(num) {
     num = Math.round(num * INT_SCALE);
 
-    return [num & 0xff, (num >> 8) & 0xff]
+    return [num % 255, Math.floor(num * IVS_255)]
 }
