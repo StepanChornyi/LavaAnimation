@@ -11,6 +11,7 @@ let tmpVec = new Vector();
 export default class ShapesController {
     constructor(ss) {
         this.ss = ss;
+        this.a = 0;
 
         this.width = window.innerWidth;
         this.height = window.innerHeight;
@@ -30,23 +31,56 @@ export default class ShapesController {
             this._animateGround(ground);
         }
 
-        for (let i = 0; i < (10 - 8 - 1); i++) {
-            const bubble = new CircleBody();
-
-            bubble.x = window.innerHeight * Math.random();
-            bubble.y = window.innerHeight * Math.random();
-
-            bubble.r = 30 + 30 * Math.random();
-
-            this.bubbles.push(bubble);
+        for (let i = 0; i < 20; i++) {
+            this.bubbles.push(new CircleBody());
         }
 
         this.shapes = [
             this.ground,
             ...this.groundCircles,
-            // ...this.bubbles
+            ...this.bubbles
         ];
 
+        window.addEventListener("wheel", (e) => {
+            // for (let i = 0; i < this.bubbles.length; i++) {
+            //     const y = this.bubbles[i].y / this.height;
+
+
+            //     this.bubbles[i].desiredX += e.deltaY * (this.mirrored ? 1 : -1) * y;
+            // }
+
+            for (let i = 0; i < this.groundCircles.length; i++) {
+                const startR = this.groundCircles[i].r;
+
+                let tw = new UTween(this.groundCircles[i], { r: 1000 }, 1.5, {
+                    ease: Ease.backIn,
+                })
+
+                tw.on("update", () => {
+                    if (i) return;
+
+                    document.body.style.filter = `brightness(${1 - Math.max(0, MathEx.lerp(-1, 1,tw.elapsed))})`;
+                });
+
+                tw.once("complete", () => {
+                    tw = new UTween(this, { a: 0 }, 2, {
+                        ease: Ease.cubicInOut,
+                    })
+
+                    tw.on("update", () => {
+                        if (i) return;
+
+                        document.body.style.filter = `brightness(${tw.elapsed})`;
+                    });
+
+                    new UTween(this.groundCircles[i], { r: startR , delay: 0.3}, 2, {
+                        ease: Ease.cubicInOut,
+                    })
+                });
+
+
+            }
+        });
     }
 
     _animateGround(g) {
@@ -84,10 +118,21 @@ export default class ShapesController {
             const g = this.groundCircles[i];
 
             g.x = (this.width / 6) * (i + Math.random() * 0.5);
-            g.y =  this.ground.top - 100;
+            g.y = this.ground.top - 100;
             g.r = 50 + 90 * Math.random();
 
             this._animateGround(g);
+        }
+
+        for (let i = 0; i < this.bubbles.length; i++) {
+            const bubble = this.bubbles[i];
+
+            bubble.x = this.width * Math.random();
+            bubble.y = this.height * Math.random();
+
+            bubble.desiredX = bubble.x;
+
+            bubble.r = 30 + 30 * Math.random();
         }
     }
 
@@ -113,24 +158,37 @@ export default class ShapesController {
         for (let i = 0; i < this.bubbles.length; i++) {
             const bubble = this.bubbles[i];
 
-            if (isMouseMoved) {
-                this._updateBubbleToMouse(bubble);
-            }
+            // if (isMouseMoved) {
+            //     this._updateBubbleToMouse(bubble);
+            // }
 
-            bubble.vy -= 0.2 / bubble.radius;
+            bubble.vy -= 0.3 / bubble.radius;
 
             bubble.vx *= 0.98;
-            bubble.vy *= 0.98;
+            // bubble.vy *= 0.98;
 
-            bubble.x += bubble.vx;
+            bubble.x += (bubble.desiredX - bubble.x) * 0.01;
             bubble.y += bubble.vy;
-            bubble.s = bubble.y / (this.height);
+            bubble.s = (bubble.y * 2 - 700) / this.height;
+
+            if (bubble.x < -bubble.radius * 2) {
+                bubble.x = this.width + bubble.radius * 1.5;
+                bubble.desiredX = bubble.x;
+            }
+
+            if (bubble.x > this.width + bubble.radius * 2) {
+                bubble.x = -bubble.radius * 1.5;
+                bubble.desiredX = bubble.x;
+
+            }
 
             if (bubble.y < -bubble.radius * 2 || bubble.s <= 0.0001) {
                 bubble.x = this.width * Math.random();
                 bubble.y = this.height + bubble.radius * 2 + 100;
                 bubble.s = 1;
                 bubble.vy = 0;
+                bubble.desiredX = bubble.x;
+
             }
         }
     }

@@ -11,7 +11,22 @@ export default class Scene extends DisplayObject {
     constructor(canvasID = "canvas3D", ss = 1) {
         super();
 
-        this.ss  = ss;
+        this.ss = ss;
+
+        const c = document.createElement("canvas");
+
+
+        c.style.position = "absolute";
+        c.style.width = "100%";
+        c.style.height = "100%";
+        c.style.filter = "drop-shadow(0px 0px 30px #aa0128)"
+        document.body.appendChild(c);
+
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+
+        this.ctx = c.getContext("2d");
+
 
         this.touchable = true;
 
@@ -86,6 +101,23 @@ export default class Scene extends DisplayObject {
         for (let i = 0; i < this.lavas.length; i++) {
             this.lavas[i].render(this.viewMatrix);
         }
+
+        const ctx = this.ctx;
+
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        const grd = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+
+        grd.addColorStop(0, "#570b32");
+        grd.addColorStop(1, "#2b073a");
+
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.drawImage(this.canvas, 0, 0);
+        ctx.globalCompositeOperation = "source-over";
+
     }
 
     onResize() {
@@ -93,11 +125,11 @@ export default class Scene extends DisplayObject {
         const canvas = this.canvas;
         const gl = this.gl;
 
-        canvas.width = window.innerWidth * Black.device.pixelRatio * scale;
-        canvas.height = window.innerHeight * Black.device.pixelRatio * scale;
+        canvas.width = window.innerWidth ;
+        canvas.height = window.innerHeight ;
 
-        canvas.style.width = `${window.innerWidth}px`;
-        canvas.style.height = `${window.innerHeight}px`;
+        canvas.style.width = `100%`;
+        canvas.style.height = `100%`;
 
         gl.viewport(0, 0, canvas.width, canvas.height);
     }

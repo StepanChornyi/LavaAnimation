@@ -38,7 +38,7 @@ export default class Lava {
             document.body.appendChild(this.canvas);
         }
 
-        this.lavaMesh.setColors(0xe33345, 0xe33345, 0xf0851a, 0xf0851a);
+        this.lavaMesh.setColors( 0xf0851a, 0xf0851a, 0xe33345, 0xe33345);
 
         this.transform = this.lavaMesh.transform;
         this.transformIvs = this.transform.clone().invert();
@@ -194,6 +194,8 @@ export default class Lava {
         this.optimizationTexture.height = Math.round(height * PRERENDER_SCALE)
 
         this.lavaMesh.setSize(width, height);
+
+        this.shapesController.mirrored = this.mirrored;
 
         if (this.mirrored) {
             this.transform.setTranslation(window.innerWidth - height, width);

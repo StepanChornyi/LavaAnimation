@@ -18,8 +18,6 @@ export class Game extends GameObject {
     this.touchable = true;
 
     // this.add(new SceneOld());
-    this.add(new Scene("canvas3D3", 13));
-    this.add(new Scene("canvas3D2", 7));
     this.add(new Scene("canvas3D", 1));
   }
 }
@@ -50,7 +48,7 @@ class CustomAssetManager extends AssetManager {
   constructor() {
     super();
 
-    Cache.enabled = false;
+    // Cache.enabled = false;
 
     this.mGlTextures = {};
   }

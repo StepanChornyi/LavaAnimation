@@ -212,7 +212,7 @@ void main() {
     if(pr.g > 0.5) {
         setFragColor(-1.0);
     } else if(pr.b < 0.5) {
-        setFragColor(1000.0);
+        setFragColor(999.0);
     } else {
         setFragColor(getDistanceToLava());
     }
