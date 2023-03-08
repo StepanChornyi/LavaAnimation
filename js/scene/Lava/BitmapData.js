@@ -1,5 +1,5 @@
 import { TEXTURE_DEBUG, FPS_METER } from "../../animationConfig";
-import { INT_SCALE } from "./lavaConfig";
+import { INT_OFFSET, INT_SCALE } from "./lavaConfig";
 
 export default class BitmapData {
     constructor(gl, width, height = width) {
@@ -11,6 +11,10 @@ export default class BitmapData {
 
         canvas.width = width;
         canvas.height = height;
+    }
+
+    initImageData() {
+        const canvas = this.canvas;
 
         const ctx = this._ctx = canvas.getContext("2d");
 
@@ -23,6 +27,8 @@ export default class BitmapData {
             canvas.style.top = FPS_METER ? "48px" : "0px";
             document.body.appendChild(canvas);
         }
+
+        return this;
     }
 
     _createGlTexture() {
@@ -43,9 +49,9 @@ export default class BitmapData {
     updateAndBindTexture() {
         const gl = this.gl;
 
+        gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, this._imgData.data);
-        gl.activeTexture(gl.TEXTURE0);
 
         if (TEXTURE_DEBUG) {
             const d = this._imgData.data;
@@ -60,10 +66,18 @@ export default class BitmapData {
         }
     }
 
+    updateAndBindTextureCanvas() {
+        const gl = this.gl;
+
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
+    }
+
     setCircle(circle, dataX, dataY) {
         const x = numberTo2Bytes(circle.x);
         const y = numberTo2Bytes(circle.y);
-        const r = numberTo2Bytes(circle.r);
+        const r = numberTo2Bytes(circle.radius);
 
         this.setPixel(dataX, dataY, x[0], x[1], y[0], y[1]);
         this.setPixel(dataX + 1, dataY, r[0], r[1], 0, 0);
@@ -96,15 +110,19 @@ export default class BitmapData {
         return this.canvas.height;
     }
 
-    static get INT_SCALE() {
-        return INT_SCALE;
+    set width(val) {
+        this.canvas.width = val;
+    }
+
+    set height(val) {
+        this.canvas.height = val;
     }
 }
 
 const IVS_255 = 1 / 255;
 
 function numberTo2Bytes(num) {
-    num = Math.round(num * INT_SCALE);
+    num = Math.round((num + INT_OFFSET) * INT_SCALE);
 
     return [num % 255, Math.floor(num * IVS_255)]
 }

@@ -4,6 +4,8 @@ import WEBGL_UTILS from '../WebGL/WebglUtils';
 import ResizeActionComponent from '../libs/resize-action-component';
 import Background from './Background/Background';
 import Lava from './Lava/Lava';
+import BitmapData from './Lava/BitmapData';
+import { DATA_TEXTURE_SIZE } from './Lava/lavaConfig';
 
 export default class Scene extends DisplayObject {
     constructor() {
@@ -36,12 +38,20 @@ export default class Scene extends DisplayObject {
 
         this.background = new Background(gl);
 
-        const count = 1;
+        const bitmapData =  new BitmapData(gl, DATA_TEXTURE_SIZE).initImageData();
+
+        const count = 2;
 
         this.lavas = [];
 
         for (let i = 0; i < count; i++) {
-            this.lavas.push(new Lava(gl));
+            const lava = new Lava(gl, bitmapData);
+
+            lava.mirrored = !i;
+            lava.dataX = i * 2;
+            lava.updateSizeAndTransform(true);
+
+            this.lavas.push(lava);
         }
     }
 
@@ -64,6 +74,12 @@ export default class Scene extends DisplayObject {
         this._updateViewMatrix();
 
         this.background.render(this.viewMatrix);
+
+        for (let i = 0; i < this.lavas.length; i++) {
+            this.lavas[i].updateShapesData();
+        }
+
+        this.lavas[0].bitmapData.updateAndBindTexture();
 
         for (let i = 0; i < this.lavas.length; i++) {
             this.lavas[i].render(this.viewMatrix);

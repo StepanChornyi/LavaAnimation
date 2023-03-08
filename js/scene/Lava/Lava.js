@@ -7,34 +7,40 @@ import BitmapData from './BitmapData';
 import { DATA_TEXTURE_SIZE } from './lavaConfig';
 
 import LavaMesh from './LavaMesh/LavaMesh';
+import ShapesController from './ShapesController';
+
+const PRERENDER_SCALE = 0.25
 
 export default class Lava {
-    constructor(gl) {
+    constructor(gl, bitmapData) {
         this.gl = gl;
+
+        this._dataX = 0;
 
         const program = LavaMesh.createProgram(gl);
 
         this.lavaMesh = new LavaMesh(gl, program);
 
-        this.canvas = document.createElement("canvas");
+        this.shapesController = new ShapesController();
 
-        this.canvas.width = window.innerWidth * 0.5;
-        this.canvas.height = window.innerHeight * 0.5;
+        this.optimizationTexture = new BitmapData(gl, Math.round(window.innerWidth * PRERENDER_SCALE), Math.round(window.innerHeight * PRERENDER_SCALE));
+
+        this.canvas = this.optimizationTexture.canvas;
 
         this.ctx = this.canvas.getContext("2d");
 
         this.canvas.style.position = "absolute";
-        this.canvas.style.opacity = "0.3";
+        this.canvas.style.opacity = "0";
         this.canvas.style.width = "100%";
         this.canvas.style.height = "100%";
         document.body.appendChild(this.canvas);
 
-        this.lavaMesh.setColors(0xf0851a, 0xf0851a, 0xe33345, 0xe33345);
+        this.lavaMesh.setColors(0xe33345, 0xe33345, 0xf0851a, 0xf0851a);
 
         this.transform = this.lavaMesh.transform;
         this.transformIvs = this.transform.clone().invert();
 
-        this.bitmapData = new BitmapData(gl, DATA_TEXTURE_SIZE);
+        this.bitmapData = bitmapData;
 
         this.rect = new Rect(0, 0, 100, 100);
 
@@ -86,38 +92,42 @@ export default class Lava {
         return circles;
     }
 
-    _updateMovement() {
-        for (let i = 0; i < this.shapes.length; i++) {
-            const s = this.shapes[i];
+    // _updateMovement() {
+    //     for (let i = 0; i < this.shapes.length; i++) {
+    //         const s = this.shapes[i];
 
-            if (isNaN(s.vx) || isNaN(s.vy))
-                continue;
+    //         if (isNaN(s.vx) || isNaN(s.vy))
+    //             continue;
 
-            if (s.right > this.lavaMesh.width)
-                s.vx = Math.abs(s.vx) * -1;
+    //         if (s.right > this.lavaMesh.width)
+    //             s.vx = Math.abs(s.vx) * -1;
 
-            if (s.left < 0)
-                s.vx = Math.abs(s.vx);
+    //         if (s.left < 0)
+    //             s.vx = Math.abs(s.vx);
 
-            if (s.bottom > this.lavaMesh.height)
-                s.vy = Math.abs(s.vy) * -1;
+    //         if (s.bottom > this.lavaMesh.height)
+    //             s.vy = Math.abs(s.vy) * -1;
 
-            if (s.top < 0)
-                s.vy = Math.abs(s.vy);
+    //         if (s.top < 0)
+    //             s.vy = Math.abs(s.vy);
 
-            s.x += s.vx;
-            s.y += s.vy;
-        }
-    }
+    //         s.x += s.vx;
+    //         s.y += s.vy;
+    //     }
+    // }
 
     updateShapesData() {
-        for (let i = 0; i < this.shapes.length; i++) {
-            const shape = this.shapes[i];
+        this.shapesController.onUpdate();
+
+        const shapes = this.shapesController.shapes;
+
+        for (let i = 0; i < shapes.length; i++) {
+            const shape = shapes[i];
 
             if (shape.isCircle) {
-                this.bitmapData.setCircle(this.shapes[i], 0, i);
+                this.bitmapData.setCircle(shapes[i], this.dataX, i);
             } else if (shape.isRect) {
-                this.bitmapData.setRect(this.shapes[i], 0, i);
+                this.bitmapData.setRect(shapes[i], this.dataX, i);
             }
         }
 
@@ -126,18 +136,23 @@ export default class Lava {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.globalCompositeOperation = "lighter";
         ctx.save()
-        ctx.scale(0.5, 0.5)
+        ctx.scale(PRERENDER_SCALE, PRERENDER_SCALE)
 
-        for (let i = 0; i < this.shapes.length; i++) {
-            const shape = this.shapes[i];
+        const shapeOffset = 2;
+
+        for (let i = 0; i < shapes.length; i++) {
+            const shape = shapes[i];
 
             ctx.fillStyle = ColorHelper.intToRGBA(0x00ff00, 1)
             ctx.beginPath();
 
             if (shape.isCircle) {
-                ctx.arc(shape.x, shape.y, shape.r, 0, Math.PI * 2);
+                if (shape.radius - shapeOffset <= 0)
+                    continue;
+
+                ctx.arc(shape.x, shape.y, shape.radius - shapeOffset, 0, Math.PI * 2);
             } else if (shape.isRect) {
-                ctx.rect(shape.x, shape.y, shape.width, shape.height);
+                ctx.rect(shape.x + shapeOffset, shape.y + shapeOffset, shape.width - shapeOffset * 2, shape.height - shapeOffset * 2);
             }
 
             ctx.closePath();
@@ -149,7 +164,10 @@ export default class Lava {
             const blendDist = 100 * 0.75;
 
             if (shape.isCircle) {
-                ctx.arc(shape.x, shape.y, shape.r + blendDist, 0, Math.PI * 2);
+                if (shape.radius - shapeOffset <= 0)
+                continue;
+                
+                ctx.arc(shape.x, shape.y, shape.radius + blendDist, 0, Math.PI * 2);
             } else if (shape.isRect) {
                 ctx.rect(shape.x - blendDist, shape.y - blendDist, shape.width + blendDist * 2, shape.height + blendDist * 2);
             }
@@ -162,34 +180,51 @@ export default class Lava {
 
     }
 
-    updateSizeAndTransform() {
-        if (this.lavaMesh.width === window.innerWidth && this.lavaMesh.height === window.innerHeight)
+    updateSizeAndTransform(force = false) {
+        const width = window.innerHeight;
+        const height = window.innerWidth * 0.5;
+
+        if (this.lavaMesh.width === width && this.lavaMesh.height === height && !force)
             return;
 
-        this.lavaMesh.setSize(window.innerWidth, window.innerHeight);
+        this.optimizationTexture.width = Math.round(width * PRERENDER_SCALE)
+        this.optimizationTexture.height = Math.round(height * PRERENDER_SCALE)
 
-        // this.transform.setTranslation(window.innerHeight, 0);
-        // this.transform.setRotation(-Math.PI * 0.5);
+        this.lavaMesh.setSize(width, height);
 
-
-        this.canvas.width = window.innerWidth * 0.5;
-        this.canvas.height = window.innerHeight * 0.5;
+        if (this.mirrored) {
+            this.transform.setTranslation(window.innerWidth - height, width);
+            this.transform.setRotation(Math.PI * 0.5);
+        } else {
+            this.transform.setTranslation(height, 0);
+            this.transform.setRotation(-Math.PI * 0.5);
+        }
 
         this.transformIvs.copyFrom(this.transform).invert();
 
-        this.lavaMesh.elementsCount = this.shapes.length;
+        this.shapesController.onResize(width, height);
+
+        this.lavaMesh.elementsCount = this.shapesController.shapes.length;
     }
 
     render(viewMatrix3x3) {
-        this._updateMovement();
-
-        this.updateShapesData();
+        // this._updateMovement();
 
         this.updateSizeAndTransform();
 
-        this.bitmapData.updateAndBindTexture();
+        // this.bitmapData.updateAndBindTexture();
+        this.optimizationTexture.updateAndBindTextureCanvas();
+
 
         this.lavaMesh.render(viewMatrix3x3);
+    }
+
+    get dataX() {
+        return this.lavaMesh.dataX;
+    }
+
+    set dataX(x) {
+        this.lavaMesh.dataX = x;
     }
 }
 

@@ -1,7 +1,7 @@
 import Shape from './Shape';
 
 export default class Circle extends Shape {
-    constructor(x, y, r) {
+    constructor(x, y, r = 0) {
         super(x, y);
 
         this.r = r;
@@ -10,6 +10,10 @@ export default class Circle extends Shape {
 
     get radius() {
         return this.r;
+    }
+
+    set radius(r) {
+        this.r = r;
     }
 
     get left() {

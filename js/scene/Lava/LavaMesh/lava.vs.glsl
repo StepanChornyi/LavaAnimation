@@ -14,9 +14,9 @@ uniform mat3 viewTransform;
 void main() {
   fragPos = vertPosition;
   fragColor = vertColor;
-  uv = vertUv;
+  uv = vec2(vertUv.x, 1.0 - vertUv.y);
 
   vec3 pos = viewTransform * transform * vec3(vertPosition, 1.0);
 
-  gl_Position = vec4( (pos.xy * 2.0 - 1.0) * vec2(1.0, -1.0), 1.0, 1.0);
+  gl_Position = vec4((pos.xy * 2.0 - 1.0) * vec2(1.0, -1.0), 1.0, 1.0);
 }

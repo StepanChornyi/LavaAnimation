@@ -1,11 +1,11 @@
 import Shape from './Shape';
 
 export default class Rect extends Shape {
-    constructor(x, y, r) {
+    constructor(x, y, w = 0, h = w) {
         super(x, y);
 
-        this.w = r;
-        this.h = r;
+        this.w = w;
+        this.h = h;
 
         this.isRect = true;
     }
@@ -16,6 +16,14 @@ export default class Rect extends Shape {
 
     get height() {
         return this.h;
+    }
+
+    set width(w) {
+        this.w = w;
+    }
+
+    set height(h) {
+        this.h = h;
     }
 
     get halfWidth() {

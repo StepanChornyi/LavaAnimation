@@ -1,5 +1,5 @@
 export default class Shape {
-    constructor(x, y) {
+    constructor(x = 0, y = 0) {
         this.x = x;
         this.y = y;
         this.vx = 0;
