@@ -8,11 +8,12 @@ import { DATA_TEXTURE_SIZE } from './lavaConfig';
 
 import LavaMesh from './LavaMesh/LavaMesh';
 import ShapesController from './ShapesController';
+import { TEXTURE_DEBUG } from '../../animationConfig';
 
 const PRERENDER_SCALE = 0.25
 
 export default class Lava {
-    constructor(gl, bitmapData) {
+    constructor(gl, bitmapData, ss) {
         this.gl = gl;
 
         this._dataX = 0;
@@ -21,7 +22,7 @@ export default class Lava {
 
         this.lavaMesh = new LavaMesh(gl, program);
 
-        this.shapesController = new ShapesController();
+        this.shapesController = new ShapesController(ss);
 
         this.optimizationTexture = new BitmapData(gl, Math.round(window.innerWidth * PRERENDER_SCALE), Math.round(window.innerHeight * PRERENDER_SCALE));
 
@@ -29,11 +30,13 @@ export default class Lava {
 
         this.ctx = this.canvas.getContext("2d");
 
-        this.canvas.style.position = "absolute";
-        this.canvas.style.opacity = "0";
-        this.canvas.style.width = "100%";
-        this.canvas.style.height = "100%";
-        document.body.appendChild(this.canvas);
+        if(TEXTURE_DEBUG){
+            this.canvas.style.position = "absolute";
+            this.canvas.style.opacity = "0";
+            this.canvas.style.width = "100%";
+            this.canvas.style.height = "100%";
+            document.body.appendChild(this.canvas);
+        }
 
         this.lavaMesh.setColors(0xe33345, 0xe33345, 0xf0851a, 0xf0851a);
 

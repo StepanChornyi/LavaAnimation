@@ -24,6 +24,15 @@ export default class UTween extends Tween {
     return this;
   }
 
+  kill() {
+    this._shadowObject.removeFromParent();
+
+    while (this._shadowObject.getComponentAt(0)) {
+      this._shadowObject.removeComponent(this._shadowObject.getComponentAt(0));
+    }
+    shadowObjectsPool.push(this._shadowObject);
+  }
+
   onUpdate() {
     super.onUpdate();
 

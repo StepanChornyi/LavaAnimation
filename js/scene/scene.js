@@ -8,13 +8,16 @@ import BitmapData from './Lava/BitmapData';
 import { DATA_TEXTURE_SIZE } from './Lava/lavaConfig';
 
 export default class Scene extends DisplayObject {
-    constructor() {
+    constructor(canvasID = "canvas3D", ss = 1) {
         super();
+
+        this.ss  = ss;
 
         this.touchable = true;
 
-        this.gl = null;
-        this.canvas = null;
+        this.canvas = document.getElementById(canvasID);
+        this.gl = WEBGL_UTILS.getWebGlContext(this.canvas);
+
         this.lavaMesh = null;
 
         this.background = null;
@@ -25,8 +28,7 @@ export default class Scene extends DisplayObject {
     }
 
     _init() {
-        const canvas = this.canvas = document.getElementById("canvas3D");
-        const gl = this.gl = WEBGL_UTILS.getWebGlContext(canvas);
+        const gl = this.gl;
 
         this.viewMatrix = new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]);
 
@@ -38,14 +40,14 @@ export default class Scene extends DisplayObject {
 
         this.background = new Background(gl);
 
-        const bitmapData =  new BitmapData(gl, DATA_TEXTURE_SIZE).initImageData();
+        const bitmapData = new BitmapData(gl, DATA_TEXTURE_SIZE).initImageData();
 
         const count = 2;
 
         this.lavas = [];
 
         for (let i = 0; i < count; i++) {
-            const lava = new Lava(gl, bitmapData);
+            const lava = new Lava(gl, bitmapData, this.ss);
 
             lava.mirrored = !i;
             lava.dataX = i * 2;
@@ -73,7 +75,7 @@ export default class Scene extends DisplayObject {
 
         this._updateViewMatrix();
 
-        this.background.render(this.viewMatrix);
+        // this.background.render(this.viewMatrix);
 
         for (let i = 0; i < this.lavas.length; i++) {
             this.lavas[i].updateShapesData();

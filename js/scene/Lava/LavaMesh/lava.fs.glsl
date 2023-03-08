@@ -171,14 +171,16 @@ float getDistanceToLava() {
 
 void setFragColor(float lavaDist) {
     float glowSize = 1.5;
-    float bloomSize = 0.0;
+    float bloomSize = glowSize + 10.0;
     float colorHeightMix = (uv.y + 1.0) * 0.5;
 
     // vec4 glowColorBottom = vec4(0.94, 0.52, 0.1, 1.0);
     // vec4 glowColorTop = vec4(0.89, 0.2, 0.27, 1.0);
 
+    float noise = (mod(fragPos.y, 2.0)) / 255.0;
+
     if(lavaDist < 0.0) {
-        gl_FragColor = vec4(fragColor, 1.0); //mix(glowColorBottom, glowColorTop, colorHeightMix);
+        gl_FragColor = vec4(fragColor + noise, 1.0); //mix(glowColorBottom, glowColorTop, colorHeightMix);
     } else if(lavaDist <= glowSize) {
         float glowFactor = quadraticOutEase(1.0 - lavaDist / glowSize);
 
@@ -190,16 +192,16 @@ void setFragColor(float lavaDist) {
         gl_FragColor = glowColor;
 
     } else if(lavaDist <= bloomSize) {
-        vec3 col = vec3(0.8313, 0.05882, 0.3921);
+        vec3 col = vec3(0.0, 0.0, 0.0);
 
         float glowFactor = quadraticOutEase(1.0 - lavaDist / bloomSize) * 0.3;
 
         gl_FragColor = vec4(col, glowFactor);
-        discard;
 
     } else {
         // gl_FragColor = texture2D(sampler, (glPos+1.0)*0.5);
         // gl_FragColor = vec4(fragColor, 0.3);
+        // gl_FragColor =texture2D(prerendered, uv);
         discard;
     }
 }

@@ -9,7 +9,9 @@ let prevMousePos = new Vector();
 let tmpVec = new Vector();
 
 export default class ShapesController {
-    constructor() {
+    constructor(ss) {
+        this.ss = ss;
+
         this.width = window.innerWidth;
         this.height = window.innerHeight;
 
@@ -20,9 +22,6 @@ export default class ShapesController {
         for (let i = 0; i < 8; i++) {
             const ground = new CircleBody(0, 0, 50);
 
-            ground.x = (window.innerWidth / 6) * (i + Math.random() * 0.5);
-            ground.y = window.innerHeight * (0.9 + 0.1 * Math.random());
-            ground.r = 50 + 90 * Math.random();
             ground.d = Math.random() < 0.5 ? -1 : 1;
             ground.sX = 0.5 + Math.random();
 
@@ -31,7 +30,7 @@ export default class ShapesController {
             this._animateGround(ground);
         }
 
-        for (let i = 0; i < (32 - 8 - 1); i++) {
+        for (let i = 0; i < (10 - 8 - 1); i++) {
             const bubble = new CircleBody();
 
             bubble.x = window.innerHeight * Math.random();
@@ -45,24 +44,30 @@ export default class ShapesController {
         this.shapes = [
             this.ground,
             ...this.groundCircles,
-            ...this.bubbles
+            // ...this.bubbles
         ];
 
     }
 
     _animateGround(g) {
-        new UTween(g, { s: 1.3 }, 10 + 5 * Math.random(), {
+        for (let i = 0; i < g.tw.length; i++) {
+            g.tw[i].kill();
+        }
+
+        const tw1 = new UTween(g, { s: 1.3 }, 10 + 5 * Math.random(), {
             ease: Ease.sinusoidalInOut,
             loop: true,
             yoyo: true,
             ease: Ease.sinusoidalInOut,
         });
 
-        new UTween(g, { y: g.y + (Math.random() * 0.5) * 200 }, 5 + 10 * Math.random(), {
+        const tw2 = new UTween(g, { y: g.y + (Math.random() * 0.5) * 200 }, 5 + 10 * Math.random(), {
             ease: Ease.quarticInOut,
             yoyo: true,
             loop: true
         });
+
+        g.tw = [tw1, tw2];
     }
 
 
@@ -71,9 +76,19 @@ export default class ShapesController {
         this.height = height;
 
         this.ground.width = width;
-        this.ground.height = height * 0.1;
+        this.ground.height = height * 0.1 * this.ss;
         this.ground.centerX = width * 0.5;
         this.ground.centerY = height;
+
+        for (let i = 0; i < this.groundCircles.length; i++) {
+            const g = this.groundCircles[i];
+
+            g.x = (this.width / 6) * (i + Math.random() * 0.5);
+            g.y =  this.ground.top - 100;
+            g.r = 50 + 90 * Math.random();
+
+            this._animateGround(g);
+        }
     }
 
     onUpdate() {
@@ -84,8 +99,8 @@ export default class ShapesController {
             groundCircle.x += sX * d;
 
             if (d < 0 && groundCircle.x < -groundCircle.r * 2) {
-                groundCircle.x = window.innerWidth + groundCircle.r * 2;
-            } else if (d > 0 && groundCircle.x > window.innerWidth + groundCircle.r * 2) {
+                groundCircle.x = this.width + groundCircle.r * 2;
+            } else if (d > 0 && groundCircle.x > this.width + groundCircle.r * 2) {
                 groundCircle.x = -groundCircle.r * 2;
             }
         }
@@ -176,7 +191,7 @@ class CircleBody extends Circle {
         this.s = 1;
         this.vx = 0;
         this.vy = 0;
-        this.tw = null;
+        this.tw = [];
     }
 
     get radius() {
