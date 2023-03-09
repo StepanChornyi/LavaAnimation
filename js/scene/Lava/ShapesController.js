@@ -13,8 +13,9 @@ export default class ShapesController {
         this.ss = ss;
         this.a = 0;
 
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
+        this.grd = document.getElementById('gradient');
+
+        this.width = this.height = 1;
 
         this.ground = new Rect();
         this.groundCircles = [];
@@ -59,7 +60,9 @@ export default class ShapesController {
                 tw.on("update", () => {
                     if (i) return;
 
-                    document.body.style.filter = `brightness(${1 - Math.max(0, MathEx.lerp(-1, 1,tw.elapsed))})`;
+                    document.body.style.filter = `brightness(${1 - Math.max(0, MathEx.lerp(-1, 1, tw.elapsed))})`;
+
+                    // this.grd.style.opacity = `${1 - Math.max(0, MathEx.lerp(-1, 1, tw.elapsed))}`;
                 });
 
                 tw.once("complete", () => {
@@ -71,9 +74,10 @@ export default class ShapesController {
                         if (i) return;
 
                         document.body.style.filter = `brightness(${tw.elapsed})`;
+                        // this.grd.style.opacity = `${tw.elapsed}`;
                     });
 
-                    new UTween(this.groundCircles[i], { r: startR , delay: 0.3}, 2, {
+                    new UTween(this.groundCircles[i], { r: startR, delay: 0.3 }, 2, {
                         ease: Ease.cubicInOut,
                     })
                 });
@@ -117,9 +121,9 @@ export default class ShapesController {
         for (let i = 0; i < this.groundCircles.length; i++) {
             const g = this.groundCircles[i];
 
-            g.x = (this.width / 6) * (i + Math.random() * 0.5);
+            g.x = ((this.width / 6) * (i + Math.random() * 0.5)) * 0.5;
             g.y = this.ground.top - 100;
-            g.r = 50 + 90 * Math.random();
+            g.r = (50 + 90 * Math.random()) * 0.5;
 
             this._animateGround(g);
         }

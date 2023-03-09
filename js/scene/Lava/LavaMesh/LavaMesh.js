@@ -1,10 +1,17 @@
 import WEBGL_UTILS from '../../../WebGL/WebglUtils';
 import RectMesh from '../../../RectMesh/RectMesh';
 
-import { DATA_TEXTURE_SIZE_IVS, INT_OFFSET, INT_SCALE_IVS } from './../lavaConfig';
+import { BLEND_DIST_FACTOR, DATA_TEXTURE_SIZE_IVS, INT_OFFSET, INT_SCALE_IVS, MAX_OBJECTS_COUNT } from './../lavaConfig';
 
 import vs from "./lava.vs.glsl";
-import fs from "./lava.fs.glsl";
+import fsRaw from "./lava.fs.glsl";
+
+const fs = fsRaw
+    .replace("MAX_OBJECTS_COUNT", MAX_OBJECTS_COUNT)
+    .replace("DATA_TEXTURE_SIZE_IVS", DATA_TEXTURE_SIZE_IVS)
+    .replace("BLEND_DIST_FACTOR", BLEND_DIST_FACTOR.toFixed(1))
+    .replace("INT_SCALE_IVS", INT_SCALE_IVS.toFixed(8))
+    .replace("INT_OFFSET", INT_OFFSET.toFixed(1));
 
 export default class LavaMesh extends RectMesh {
     constructor(gl, program = LavaMesh.createProgram(gl)) {
@@ -19,14 +26,9 @@ export default class LavaMesh extends RectMesh {
     setUniforms(viewMatrix3x3) {
         super.setUniforms(viewMatrix3x3);
 
-        const sizeUniformPos = this.gl.getUniformLocation(this.program, `sizeIvs`);
+        const dataTextureXUniformPos = this.gl.getUniformLocation(this.program, `dataTextureX`);
 
-        this.gl.uniform4f(sizeUniformPos,
-            this.dataX,
-            DATA_TEXTURE_SIZE_IVS,
-            INT_SCALE_IVS,
-            INT_OFFSET
-        );
+        this.gl.uniform1i(dataTextureXUniformPos, this.dataX);
 
         const circlesCount = this.gl.getUniformLocation(this.program, `circlesCount`);
 
@@ -35,9 +37,8 @@ export default class LavaMesh extends RectMesh {
         const u_image0Location = this.gl.getUniformLocation(this.program, "shapesData");
         const u_image1Location = this.gl.getUniformLocation(this.program, "prerendered");
 
-        // set which texture units to render with.
-        this.gl.uniform1i(u_image0Location, 0);  // texture unit 0
-        this.gl.uniform1i(u_image1Location, 1);  // texture unit 1
+        this.gl.uniform1i(u_image0Location, 0);
+        this.gl.uniform1i(u_image1Location, 1);
     }
 
     render(viewMatrix3x3) {

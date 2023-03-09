@@ -4,14 +4,16 @@ varying vec3 fragColor;
 varying vec2 fragPos;
 varying vec2 uv;
 
-uniform vec4 sizeIvs;
+uniform int dataTextureX;
 uniform int circlesCount;
 
 uniform sampler2D shapesData;
 uniform sampler2D prerendered;
 
-const int maxCount = 128;
-const float blendDistFactor = 100.0;
+//external constants will be replaced before compilation
+
+const int maxCount = MAX_OBJECTS_COUNT;//external
+const float blendDistFactor = BLEND_DIST_FACTOR;//external
 
 float blendDist(float a, float b, float k) {
     float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
@@ -30,11 +32,11 @@ float distToRect(vec4 rect, vec2 p) {
 }
 
 vec4 getTextel(vec2 pos) {
-    return texture2D(shapesData, (pos + vec2(0.5, 0.5)) * sizeIvs.y);
+    return texture2D(shapesData, (pos + vec2(0.5, 0.5)) * DATA_TEXTURE_SIZE_IVS);//DATA_TEXTURE_SIZE_IVS - external
 }
 
 float int2bytesToFloat(vec2 int2bytes) {
-    return dot(int2bytes.xy, vec2(255.0, 65025.0)) * sizeIvs.z - sizeIvs.w;
+    return dot(int2bytes.xy, vec2(255.0, 65025.0)) * INT_SCALE_IVS - INT_OFFSET;//INT_SCALE_IVS, INT_OFFSET - external
 }
 
 vec4 getShape(float xX, float yY) {
@@ -62,7 +64,7 @@ float getDistanceToLava() {
             break;
         }
 
-        vec4 shape = getShape(float(sizeIvs.x), float(i));
+        vec4 shape = getShape(float(dataTextureX), float(i));
 
         if(int(shape.w) <= 0) {
             distances[i] = distToCircle(shape.xyz, fragPos);

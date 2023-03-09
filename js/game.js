@@ -1,13 +1,13 @@
 import { LoaderType, AssetManager, GameObject, AssetType, Asset, Debug } from 'black-engine';
 
-import SceneOld from './sceneOld/scene-old';
+// import SceneOld from './sceneOld/scene-old';
 import Scene from './Scene/Scene';
 
 export class Game extends GameObject {
   constructor() {
     super();
 
-    const assets = new CustomAssetManager();
+    const assets = new AssetManager();
 
     assets.on('complete', this.onAssetsLoadded, this);
 
@@ -18,7 +18,7 @@ export class Game extends GameObject {
     this.touchable = true;
 
     // this.add(new SceneOld());
-    this.add(new Scene("canvas3D", 1));
+    this.add(new Scene(document.getElementById("blobContainer"), 1));
   }
 }
 

@@ -1,4 +1,4 @@
-import { Component, DisplayObject, Black } from 'black-engine';
+import { Component, DisplayObject, Black, ColorHelper } from 'black-engine';
 
 import WEBGL_UTILS from '../WebGL/WebglUtils';
 import ResizeActionComponent from '../libs/resize-action-component';
@@ -8,30 +8,31 @@ import BitmapData from './Lava/BitmapData';
 import { DATA_TEXTURE_SIZE } from './Lava/lavaConfig';
 
 export default class Scene extends DisplayObject {
-    constructor(canvasID = "canvas3D", ss = 1) {
+    constructor(container, ss = 1) {
         super();
+
+        this.container = container;
+        this.cachedWidth = null;
+        this.cachedHeight = null;
+
+        this.canvas = container.getElementsByTagName("canvas")[0];
+        this.gl = WEBGL_UTILS.getWebGlContext(this.canvas);
 
         this.ss = ss;
 
+        this.canvas.style.display = "none";
+
         const c = document.createElement("canvas");
 
+        c.style.color = ColorHelper.hexColorToString(0xaa0128);
 
-        c.style.position = "absolute";
-        c.style.width = "100%";
-        c.style.height = "100%";
-        c.style.filter = "drop-shadow(0px 0px 30px #aa0128)"
-        document.body.appendChild(c);
+        c.id = "glow";
 
-        c.width = window.innerWidth;
-        c.height = window.innerHeight;
+        container.appendChild(c);
 
         this.ctx = c.getContext("2d");
 
-
         this.touchable = true;
-
-        this.canvas = document.getElementById(canvasID);
-        this.gl = WEBGL_UTILS.getWebGlContext(this.canvas);
 
         this.lavaMesh = null;
 
@@ -53,7 +54,7 @@ export default class Scene extends DisplayObject {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.colorMask(true, true, true, true);
 
-        this.background = new Background(gl);
+        // this.background = new Background(gl);
 
         const bitmapData = new BitmapData(gl, DATA_TEXTURE_SIZE).initImageData();
 
@@ -62,33 +63,25 @@ export default class Scene extends DisplayObject {
         this.lavas = [];
 
         for (let i = 0; i < count; i++) {
-            const lava = new Lava(gl, bitmapData, this.ss);
+            const lava = new Lava(gl, bitmapData, this.container);
 
             lava.mirrored = !i;
             lava.dataX = i * 2;
-            lava.updateSizeAndTransform(true);
+            // lava.updateSizeAndTransform(true);
 
             this.lavas.push(lava);
         }
     }
 
-    _updateViewMatrix() {
-        this.viewMatrix[0] = 1 / this.gl.canvas.width;
-        this.viewMatrix[4] = 1 / this.gl.canvas.height;
-    }
-
-    onAdded() {
-        this.addComponent(new ResizeActionComponent(this.onResize, this));
-    }
-
     onRender() {
         const gl = this.gl;
+
+        if (this.isResizeNeeded())
+            this.onResize();
 
         // const dt = (- this.lastUpdateTime + (this.lastUpdateTime = performance.now())) * 0.06;//*0.06 same as 1/16.666666
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-        this._updateViewMatrix();
 
         // this.background.render(this.viewMatrix);
 
@@ -118,19 +111,55 @@ export default class Scene extends DisplayObject {
         ctx.drawImage(this.canvas, 0, 0);
         ctx.globalCompositeOperation = "source-over";
 
+        this.ctx.canvas.style.filter = `drop-shadow(0px 0px 30px ${ColorHelper.hexColorToString(getColor(this.ctx.canvas, 'color'))})`;
+    }
+
+    isResizeNeeded() {
+        return this.container.offsetWidth !== this.cachedWidth || this.container.offsetHeight !== this.cachedHeight;
     }
 
     onResize() {
-        const scale = 1//0.25;
+        const scale = 1;
+        const container = this.container;
         const canvas = this.canvas;
         const gl = this.gl;
 
-        canvas.width = window.innerWidth ;
-        canvas.height = window.innerHeight ;
+        this.cachedWidth = container.offsetWidth;
+        this.cachedHeight = container.offsetHeight;
 
-        canvas.style.width = `100%`;
-        canvas.style.height = `100%`;
+        const width = this.cachedWidth * scale;
+        const height = this.cachedHeight * scale;
 
-        gl.viewport(0, 0, canvas.width, canvas.height);
+        canvas.width = width;
+        canvas.height = height;
+
+        this.ctx.canvas.width = width;
+        this.ctx.canvas.height = height;
+
+        gl.viewport(0, 0, width, height);
+
+        for (let i = 0; i < this.lavas.length; i++) {
+            this.lavas[i].onResize(width, height, scale);
+        }
+
+        this._updateViewMatrix(width, height);
     }
+
+    _updateViewMatrix(width, height) {
+        this.viewMatrix[0] = 1 / width;
+        this.viewMatrix[4] = 1 / height;
+    }
+}
+
+function getColor(element, prop) {
+    const color = element.style[prop];
+
+    if (!color || color.indexOf("rgb(") === -1)
+        return 0x000000;
+
+    const [r, g, b] = color.split("rgb(")[1].split(")")[0].split(", ").map((v) => +v);
+
+    const hex = r << 16 | g << 8 | b;
+
+    return hex;
 }

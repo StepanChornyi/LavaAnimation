@@ -13,7 +13,7 @@ import { TEXTURE_DEBUG } from '../../animationConfig';
 const PRERENDER_SCALE = 0.25
 
 export default class Lava {
-    constructor(gl, bitmapData, ss) {
+    constructor(gl, bitmapData, container) {
         this.gl = gl;
 
         this._dataX = 0;
@@ -22,9 +22,9 @@ export default class Lava {
 
         this.lavaMesh = new LavaMesh(gl, program);
 
-        this.shapesController = new ShapesController(ss);
+        this.shapesController = new ShapesController(1);
 
-        this.optimizationTexture = new BitmapData(gl, Math.round(window.innerWidth * PRERENDER_SCALE), Math.round(window.innerHeight * PRERENDER_SCALE));
+        this.optimizationTexture = new BitmapData(gl, 10, 10);
 
         this.canvas = this.optimizationTexture.canvas;
 
@@ -32,10 +32,10 @@ export default class Lava {
 
         if(TEXTURE_DEBUG){
             this.canvas.style.position = "absolute";
-            this.canvas.style.opacity = "0";
+            this.canvas.style.opacity = "0.0";
             this.canvas.style.width = "100%";
             this.canvas.style.height = "100%";
-            document.body.appendChild(this.canvas);
+            container.appendChild(this.canvas);
         }
 
         this.lavaMesh.setColors( 0xf0851a, 0xf0851a, 0xe33345, 0xe33345);
@@ -45,55 +45,22 @@ export default class Lava {
 
         this.bitmapData = bitmapData;
 
-        this.rect = new Rect(0, 0, 100, 100);
+        // this._initMouseControl(this.rect);
 
-        this.shapes = [this.rect, ...this._createCircles()];
-
-        this._initMouseControl(this.rect);
-
-        this.updateSizeAndTransform();
+        // this.updateSizeAndTransform();
     }
 
-    _initMouseControl(shape) {
-        shape.x = window.innerWidth - shape.width;
-        shape.y = window.innerHeight - shape.height;
+    // _initMouseControl(shape) {
+    //     shape.x = window.innerWidth - shape.width;
+    //     shape.y = window.innerHeight - shape.height;
 
-        window.addEventListener('mousemove', e => {
-            const { x, y } = this.transformIvs.transformVector(new Vector(e.clientX, e.clientY));
+    //     window.addEventListener('mousemove', e => {
+    //         const { x, y } = this.transformIvs.transformVector(new Vector(e.clientX, e.clientY));
 
-            shape.x = x - shape.width * 0.5;
-            shape.y = y - shape.height * 0.5;
-        });
-    }
-
-    _createCircles() {
-        const COUNT = 30;
-        const circles = [];
-
-        for (let i = 0; circles.length < COUNT; i++) {
-            const c = Math.random() < 0.5 ? new Circle(0, 0, 100) : new Rect(0, 0, 200, 200);
-
-            c.vx = rndBtw(1, 2) * rndSign();
-            c.vy = rndBtw(1, 2) * rndSign()
-
-            c.x = this.gl.canvas.height * Math.random();
-            c.y = this.gl.canvas.height * Math.random();
-
-            {//to arrange in columns
-                const col = 30;
-
-                const offset = this.lavaMesh.width / (col + 1)
-
-                // c.x = (i % col) * offset + offset;
-                // c.y = Math.floor(i / col) * offset + offset;
-                // c.r = 50
-            }
-
-            circles.push(c);
-        }
-
-        return circles;
-    }
+    //         shape.x = x - shape.width * 0.5;
+    //         shape.y = y - shape.height * 0.5;
+    //     });
+    // }
 
     // _updateMovement() {
     //     for (let i = 0; i < this.shapes.length; i++) {
@@ -183,22 +150,19 @@ export default class Lava {
 
     }
 
-    updateSizeAndTransform(force = false) {
-        const width = window.innerHeight;
-        const height = window.innerWidth * 0.5;
+    onResize(canvasWidth, canvasHeight){
+        const width = canvasHeight;
+        const height = canvasWidth*0.5;
 
-        if (this.lavaMesh.width === width && this.lavaMesh.height === height && !force)
-            return;
-
-        this.optimizationTexture.width = Math.round(width * PRERENDER_SCALE)
-        this.optimizationTexture.height = Math.round(height * PRERENDER_SCALE)
+        this.optimizationTexture.width = Math.round(width * PRERENDER_SCALE);
+        this.optimizationTexture.height = Math.round(height * PRERENDER_SCALE);
 
         this.lavaMesh.setSize(width, height);
 
         this.shapesController.mirrored = this.mirrored;
 
         if (this.mirrored) {
-            this.transform.setTranslation(window.innerWidth - height, width);
+            this.transform.setTranslation(canvasWidth - height, width);
             this.transform.setRotation(Math.PI * 0.5);
         } else {
             this.transform.setTranslation(height, 0);
@@ -208,14 +172,14 @@ export default class Lava {
         this.transformIvs.copyFrom(this.transform).invert();
 
         this.shapesController.onResize(width, height);
-
-        this.lavaMesh.elementsCount = this.shapesController.shapes.length;
     }
 
     render(viewMatrix3x3) {
         // this._updateMovement();
 
-        this.updateSizeAndTransform();
+        this.lavaMesh.elementsCount = this.shapesController.shapes.length;
+
+        // this.updateSizeAndTransform();
 
         // this.bitmapData.updateAndBindTexture();
         this.optimizationTexture.updateAndBindTextureCanvas();
