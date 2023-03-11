@@ -20,7 +20,7 @@ export default class LavaMesh extends RectMesh {
         this.elementsCount = 0;
         this.dataX = 0;
 
-        this.setColors(0xde0404, 0xffff25, 0xcc0bcc, 0x2d08a6);
+        this.setColors(0x7b1c48, 0x430954, 0x430954, 0x7b1c48);
     }
 
     setUniforms(viewMatrix3x3) {
