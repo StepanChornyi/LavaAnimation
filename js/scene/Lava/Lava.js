@@ -10,7 +10,6 @@ import LavaMesh from './LavaMesh/LavaMesh';
 import ShapesController from './ShapesController';
 import { TEXTURE_DEBUG } from '../../animationConfig';
 
-const BLEND_OFFSET = BLEND_DIST_FACTOR *2;
 const PRERENDER_SCALE = 1;
 
 export default class Lava {
@@ -51,8 +50,8 @@ export default class Lava {
     updateShapesData() {
         this.shapesController.onUpdate();
 
-        // if (TEXTURE_DEBUG)
-        //     this.bitmapData.clear();
+        if (TEXTURE_DEBUG)
+            this.bitmapData.clear();
 
         const shapes = this.shapesController.shapes;
 
@@ -69,8 +68,8 @@ export default class Lava {
                     const distX = Math.abs(box.centerX - shape.x);
                     const distY = Math.abs(box.centerY - shape.y);
 
-                    const clipDistX = box.halfWidth + shape.radius + BLEND_OFFSET * 2;
-                    const clipDistY = box.halfHeight + shape.radius + BLEND_OFFSET * 2;
+                    const clipDistX = box.halfWidth + shape.radius + BLEND_DIST_FACTOR * 2;
+                    const clipDistY = box.halfHeight + shape.radius + BLEND_DIST_FACTOR * 2;
 
                     if (distX < clipDistX && distY < clipDistY) {
                         group.push(shape);
@@ -79,8 +78,8 @@ export default class Lava {
                     const distX = Math.abs(box.centerX - shape.centerX);
                     const distY = Math.abs(box.centerY - shape.centerY);
 
-                    const clipDistX = box.halfWidth + shape.halfWidth + BLEND_OFFSET * 2;
-                    const clipDistY = box.halfHeight + shape.halfHeight + BLEND_OFFSET * 2;
+                    const clipDistX = box.halfWidth + shape.halfWidth + BLEND_DIST_FACTOR * 2;
+                    const clipDistY = box.halfHeight + shape.halfHeight + BLEND_DIST_FACTOR * 2;
 
                     if (distX < clipDistX && distY < clipDistY) {
                         group.push(shape);
@@ -191,9 +190,9 @@ function drawShapes(ctx, shapes) {
             if (shape.radius - shapeOffset <= 0)
                 continue;
 
-            ctx.arc(shape.x, shape.y, shape.radius + BLEND_OFFSET, 0, Math.PI * 2);
+            ctx.arc(shape.x, shape.y, shape.radius + BLEND_DIST_FACTOR, 0, Math.PI * 2);
         } else if (shape.isRect) {
-            ctx.rect(shape.x - BLEND_OFFSET, shape.y - BLEND_OFFSET, shape.width + BLEND_OFFSET * 2, shape.height + BLEND_OFFSET * 2);
+            ctx.rect(shape.x - BLEND_DIST_FACTOR, shape.y - BLEND_DIST_FACTOR, shape.width + BLEND_DIST_FACTOR * 2, shape.height + BLEND_DIST_FACTOR * 2);
         }
 
         ctx.closePath();
