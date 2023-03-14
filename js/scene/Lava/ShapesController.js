@@ -85,6 +85,20 @@ export default class ShapesController {
 
             }
         });
+
+        // this._initMouseControl(this.shapes[0]);
+    }
+
+    _initMouseControl(shape) {
+        shape.x = window.innerWidth * 0.5;
+        shape.y = window.innerHeight * 0.5;
+
+        window.addEventListener('mousemove', e => {
+            const { x, y } = new Vector(e.clientX, e.clientY)//this.transformIvs.transformVector(new Vector(e.clientX, e.clientY));
+
+            shape.x = x - shape.radius;
+            shape.y = y - shape.radius;
+        });
     }
 
     _animateGround(g) {
@@ -229,17 +243,7 @@ export default class ShapesController {
         bubble.y += tmpVec.y * 0.5 * distMul;
     }
 
-    // _initMouseControl(shape) {
-    //     shape.x = window.innerWidth - shape.width;
-    //     shape.y = window.innerHeight - shape.height;
 
-    //     window.addEventListener('mousemove', e => {
-    //         const { x, y } = this.transformIvs.transformVector(new Vector(e.clientX, e.clientY));
-
-    //         shape.x = x - shape.width * 0.5;
-    //         shape.y = y - shape.height * 0.5;
-    //     });
-    // }
 
 }
 

@@ -53,21 +53,29 @@ vec4 getShape(float xX, float yY) {
     return vec4(x, y, w, h);
 }
 
+int getShapesCount() {
+    return int(getTextel(vec2(dataX, 0.0)).x * 255.0);
+}
+
 float quadraticOutEase(float k) {
     return k * (2.0 - k);
 }
 
 float getDistanceToLava() {
     float distances[maxCount];
-    int circlesCount = int(int2bytesToFloat(getTextel(vec2(dataX, 0.0)).xy));
+    int circlesCount = getShapesCount();
     int maxIndex = circlesCount - 1;
+
+    if(circlesCount == 0) {
+        return 9999.0;
+    }
 
     for(int i = 0; i < maxCount; i++) {
         if(i > maxIndex) {
             break;
         }
 
-        vec4 shape = getShape(dataX, float(i+1));
+        vec4 shape = getShape(dataX, float(i + 1));
 
         if(int(shape.w) <= 0) {
             distances[i] = distToCircle(shape.xyz, fragPos);
@@ -185,7 +193,7 @@ void setFragColor(float lavaDist) {
     vec3 frc = vec3(0.0, 1.0, 0.0);
 
     vec3 col1 = vec3(0.980, 0.0294, 0.0928);
-    vec3 col2 = vec3(0.0, 0.0, 0.0);
+    vec3 col2 = vec3(0.89, 0.2, 0.27);
 
     if(abs(lavaDist) < 10.0) {
         float f = (lavaDist + 10.0) / 20.0;
@@ -200,7 +208,7 @@ void setFragColor(float lavaDist) {
         return;
     }
 
- gl_FragColor = vec4(fragColor, 1.0);
+    gl_FragColor = vec4(fragColor, 0.0);
     // discard;
 
     return;
@@ -238,9 +246,9 @@ void main() {
     // if(pr.g > 0.5) {
     //     setFragColor(-1.0);
     // } else 
-    if(pr.b < 0.5) {
-        setFragColor(999.0);
-    } else {
-        setFragColor(getDistanceToLava());
-    }
+    // if(pr.b < 0.5) {
+    //     setFragColor(999.0);
+    // } else {
+    setFragColor(getDistanceToLava());
+    // }
 }

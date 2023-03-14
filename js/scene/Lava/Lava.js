@@ -10,7 +10,7 @@ import LavaMesh from './LavaMesh/LavaMesh';
 import ShapesController from './ShapesController';
 import { TEXTURE_DEBUG } from '../../animationConfig';
 
-const BLEND_OFFSET = BLEND_DIST_FACTOR * 0.75;
+const BLEND_OFFSET = BLEND_DIST_FACTOR *2;
 const PRERENDER_SCALE = 1;
 
 export default class Lava {
@@ -51,11 +51,12 @@ export default class Lava {
     updateShapesData() {
         this.shapesController.onUpdate();
 
+        // if (TEXTURE_DEBUG)
+        //     this.bitmapData.clear();
+
         const shapes = this.shapesController.shapes;
 
         const boxes = this.lavaMesh._getBoxes();
-
-        const ll = [shapes.length];
 
         for (let j = 0; j < boxes.length; j++) {
             const box = boxes[j];
@@ -87,9 +88,6 @@ export default class Lava {
                 }
             }
 
-            
-
-            ll.push(group.length);
             this.bitmapData.setCount(group.length, j * 2, 0);
 
             for (let i = 0; i < group.length; i++) {
@@ -109,8 +107,6 @@ export default class Lava {
     onResize(canvasWidth, canvasHeight) {
         const width = canvasWidth;
         const height = canvasHeight;
-
-        console.log(width, height);
 
         this.optimizationTexture.width = Math.round(width * PRERENDER_SCALE);
         this.optimizationTexture.height = Math.round(height * PRERENDER_SCALE);

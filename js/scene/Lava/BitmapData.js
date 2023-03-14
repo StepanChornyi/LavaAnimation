@@ -56,13 +56,28 @@ export default class BitmapData {
         if (TEXTURE_DEBUG) {
             const d = this._imgData.data;
 
-            for (let i = 0; i < d.length; i += 4) {
-                if (d[i] > 0 || d[i + 1] > 0 || d[i + 2] > 0) {
-                    d[i + 3] = 255;
+            for (let x = 0, count = 0, prevC; x < this._imgData.height; x++) {
+                prevC = count;
+                count = d[x * 4];
+
+                for (let y = 0; y < this._imgData.width; y++) {
+                    const i = (y * this._imgData.width + x) * 4;
+
+                    if (d[i] || d[i + 1] || d[i + 2] || d[i + 3]) {
+                        d[i + 3] = 255;
+                    } else {
+                        d[i + 3] = 0;
+                    }
                 }
             }
 
             this._ctx.putImageData(this._imgData, 0, 0);
+        }
+    }
+
+    clear(){
+        for (let i = 0; i < this._imgData.data.length; i++) {
+            this._imgData.data[i] = 0;
         }
     }
 
@@ -94,9 +109,7 @@ export default class BitmapData {
     }
 
     setCount(count, dataX, dataY) {
-        const c = numberTo2Bytes(count);
-
-        this.setPixel(dataX, dataY, c[0], c[1], 0, 0);
+        this.setPixel(dataX, dataY, count, 0, 0, 0);
     }
 
     setPixel(x, y, r, g, b, a) {
