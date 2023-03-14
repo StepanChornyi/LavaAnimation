@@ -1,7 +1,7 @@
 precision mediump float;
 
 attribute vec2 vertPosition;
-attribute vec3 vertColor;
+attribute float vertColor;
 attribute vec2 vertUv;
 
 varying vec3 fragColor;
@@ -13,7 +13,7 @@ uniform mat3 viewTransform;
 
 void main() {
   fragPos = vertPosition;
-  fragColor = vertColor;
+  fragColor = vec3(vertColor / (256.0 * 256.0), mod(vertColor / 256.0, 256.0), mod(vertColor, 256.0)) * (1.0 / 255.0);
   uv = vec2(vertUv.x, 1.0 - vertUv.y);
 
   vec3 pos = viewTransform * transform * vec3(vertPosition, 1.0);

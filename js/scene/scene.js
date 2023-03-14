@@ -16,16 +16,16 @@ const f2 = 0.349;
 
 const rgb1 = ColorHelper.hex2rgb(0xe33385);
 
-rgb1.r =Math.round( (rgb1.r ) * f1);
-rgb1.g =Math.round( (rgb1.g ) * f1);
-rgb1.b =Math.round( (rgb1.b ) * f1);
+rgb1.r = Math.round((rgb1.r) * f1);
+rgb1.g = Math.round((rgb1.g) * f1);
+rgb1.b = Math.round((rgb1.b) * f1);
 
 
 const rgb2 = ColorHelper.hex2rgb(0xc01af0);
 
-rgb2.r =Math.round( (rgb2.r ) * f2);
-rgb2.g =Math.round( (rgb2.g ) * f2);
-rgb2.b =Math.round( (rgb2.b ) * f2);
+rgb2.r = Math.round((rgb2.r) * f2);
+rgb2.g = Math.round((rgb2.g) * f2);
+rgb2.b = Math.round((rgb2.b) * f2);
 
 
 console.log(rgb1.r.toFixed(0), rgb1.g.toFixed(0), rgb1.b.toFixed(0), "|", rgb2.r.toFixed(0), rgb2.g.toFixed(0), rgb2.b.toFixed(0));
@@ -49,7 +49,6 @@ export default class Scene extends DisplayObject {
 
         this.spriteGl = new SpriteGl(this.gl);
         this.spriteGl.setColors(0x2b073a, 0x570b32, 0x570b32, 0x2b073a);
-
 
         this.spriteGl.texture = this.renderTexture.texture;
         this.spriteGl.setSize(this.renderTexture.width, this.renderTexture.height);
@@ -95,19 +94,7 @@ export default class Scene extends DisplayObject {
 
         const bitmapData = new BitmapData(gl, DATA_TEXTURE_SIZE).initImageData();
 
-        const count = 1;
-
-        this.lavas = [];
-
-        for (let i = 0; i < count; i++) {
-            const lava = new Lava(gl, bitmapData, this.container);
-
-            lava.mirrored = !i;
-            lava.dataX = i * 2;
-            // lava.updateSizeAndTransform(true);
-
-            this.lavas.push(lava);
-        }
+        this.lava = new Lava(gl, bitmapData, this.container);
     }
 
     onRender() {
@@ -119,27 +106,11 @@ export default class Scene extends DisplayObject {
         // const dt = (- this.lastUpdateTime + (this.lastUpdateTime = performance.now())) * 0.06;//*0.06 same as 1/16.666666
 
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.renderTexture.frameBuffer);
-        gl.clearColor(0, 0, 0, 0);
-        gl.colorMask(true, true, true, true);
-        gl.viewport(0, 0, this.renderTexture.width, this.renderTexture.height);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-
-
-
-
-        for (let i = 0; i < this.lavas.length; i++) {
-            this.lavas[i].updateShapesData();
-        }
-
-        this.lavas[0].bitmapData.updateAndBindTexture();
-
-        for (let i = 0; i < this.lavas.length; i++) {
-            this.lavas[i].render(this.viewMatrix);
-        }
-
-        // this.skipFilter.render(this.viewMatrix, this.renderTexture.texture);
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, this.renderTexture.frameBuffer);
+        // gl.clearColor(0, 0, 0, 0);
+        // gl.colorMask(true, true, true, true);
+        // gl.viewport(0, 0, this.renderTexture.width, this.renderTexture.height);
+        // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -148,11 +119,19 @@ export default class Scene extends DisplayObject {
         gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+
+        this.lava.updateShapesData();
+        this.lava.bitmapData.updateAndBindTexture();
+        this.lava.render(this.viewMatrix);
+
+        // this.skipFilter.render(this.viewMatrix, this.renderTexture.texture);
+
+
         // this.ctx.canvas.width = width;
         // this.ctx.canvas.height = height;
 
-        this.spriteGl.texture = this.renderTexture.texture;
-        this.spriteGl.render(this.viewMatrix);
+        // this.spriteGl.texture = this.renderTexture.texture;
+        // this.spriteGl.render(this.viewMatrix);
 
 
         // const ctx = this.ctx;
@@ -200,9 +179,7 @@ export default class Scene extends DisplayObject {
 
         gl.viewport(0, 0, width, height);
 
-        for (let i = 0; i < this.lavas.length; i++) {
-            this.lavas[i].onResize(width, height, scale);
-        }
+        this.lava.onResize(width, height, scale);
 
         this.spriteGl.setSize(width, height);
         // this.skipFilter.onResize(width, height);

@@ -4,27 +4,38 @@ import Mesh from "../WebGL/Mesh";
 
 import vs from "./baseRect.vs.glsl";
 import fs from "./baseRect.fs.glsl";
+import Mesh2D from "../Mesh2D/Mesh2D";
 
-export default class RectMesh extends Mesh {
-    constructor(gl, program = WEBGL_UTILS.createProgram(gl, vs, fs)) {
-        super(gl, program);
+const currentConfig = {
+    vertexByteSize: 7,
+    attribs: [
+        {
+            name: 'vertPosition',
+            size: 2
+        },
+        {
+            name: 'vertColor',
+            size: 3
+        },
+        {
+            name: 'vertUv',
+            size: 2
+        }
+    ]
+};
 
-        this.gl = gl;
+const RECT_INDICES = [0, 1, 2, 2, 3, 0];
+
+export default class RectMesh extends Mesh2D {
+    constructor(gl, program = WEBGL_UTILS.createProgram(gl, vs, fs), config = currentConfig) {
+        super(gl, program, Mesh.mergeConfigs(config, currentConfig));
+
         this.width = 0;
         this.height = 0;
-        this.transform = new Matrix();
         this.colors = [new RGB(), new RGB(), new RGB(), new RGB()];
         this.dirty = true;
 
-        this._transformUniformPos = gl.getUniformLocation(program, `transform`);
-        this._viewTransformUniformPos = gl.getUniformLocation(program, `viewTransform`);
-
-        this.indices = [
-            0, 1, 2,
-            2, 3, 0
-        ];
-
-        this._transformMatrix3x3 = new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]);
+        this.indices = [...RECT_INDICES];
     }
 
     setSize(width = this.width, height = width) {
@@ -32,12 +43,6 @@ export default class RectMesh extends Mesh {
         this.height = height;
 
         this.dirty = true;
-
-        return this;
-    }
-
-    setPosition(x, y) {
-        this.position.set(x, y);
 
         return this;
     }
@@ -53,7 +58,7 @@ export default class RectMesh extends Mesh {
         return this;
     }
 
-    _updateVertices() {
+    _updateBuffers() {
         if (!this.dirty)
             return;
 
@@ -71,86 +76,12 @@ export default class RectMesh extends Mesh {
         this.dirty = false;
     }
 
-    _getTransform() {
-        this._transformMatrix3x3[0] = this.transform.data[0];
-        this._transformMatrix3x3[1] = this.transform.data[1];
-        this._transformMatrix3x3[3] = this.transform.data[2];
-        this._transformMatrix3x3[4] = this.transform.data[3];
-        this._transformMatrix3x3[6] = this.transform.data[4];
-        this._transformMatrix3x3[7] = this.transform.data[5];
-
-        return this._transformMatrix3x3;
-    }
-
-    updateAttribPointers() {
-        super.updateAttribPointers();
-
-        const gl = this.gl;
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-
-        const positionAttribLocation = gl.getAttribLocation(this.program, 'vertPosition');
-        const colorAttribLocation = gl.getAttribLocation(this.program, 'vertColor');
-        const uvAttribLocation = gl.getAttribLocation(this.program, 'vertUv');
-
-        gl.vertexAttribPointer(
-            positionAttribLocation,
-            2,
-            gl.FLOAT,
-            gl.FALSE,
-            7 * Float32Array.BYTES_PER_ELEMENT,
-            0
-        );
-
-        gl.vertexAttribPointer(
-            colorAttribLocation,
-            3,
-            gl.FLOAT,
-            gl.FALSE,
-            7 * Float32Array.BYTES_PER_ELEMENT,
-            2 * Float32Array.BYTES_PER_ELEMENT
-        );
-
-        gl.vertexAttribPointer(
-            uvAttribLocation,
-            2,
-            gl.FLOAT,
-            gl.FALSE,
-            7 * Float32Array.BYTES_PER_ELEMENT,
-            5 * Float32Array.BYTES_PER_ELEMENT
-        );
-
-        gl.enableVertexAttribArray(positionAttribLocation);
-        gl.enableVertexAttribArray(colorAttribLocation);
-        gl.enableVertexAttribArray(uvAttribLocation);
-    }
-
-    setUniforms(viewMatrix3x3) {
-        this.gl.uniformMatrix3fv(this._transformUniformPos, false, this._getTransform());
-        this.gl.uniformMatrix3fv(this._viewTransformUniformPos, false, viewMatrix3x3);
-    }
-
-    render(viewMatrix3x3) {
-        const gl = this.gl;
-
-        this._updateVertices();
-
-        gl.useProgram(this.program);
-
-        this.setUniforms(viewMatrix3x3);
-        this.updateAttribPointers();
-
-        gl.colorMask(true, true, true, true);
-        gl.disable(gl.DEPTH_TEST);
-        gl.disable(gl.CULL_FACE);
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-        gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);
-    }
-
     static get vs() {
         return vs;
+    }
+
+    static get RECT_INDICES() {
+        return RECT_INDICES;
     }
 }
 

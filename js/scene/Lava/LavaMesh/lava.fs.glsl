@@ -9,7 +9,7 @@ uniform int circlesCount;
 uniform float lavaOffset;
 
 uniform sampler2D shapesData;
-uniform sampler2D prerendered;
+uniform sampler2D preRendered;
 
 //external constants will be replaced before compilation
 
@@ -180,9 +180,9 @@ void setFragColor(float lavaDist) {
     // vec4 glowColorBottom = vec4(0.94, 0.52, 0.1, 1.0);
     // vec4 glowColorTop = vec4(0.89, 0.2, 0.27, 1.0);
 
-    vec3 frc = vec3(1.0, 0.0, 0.0);
+    vec3 frc = vec3(0.0, 1.0, 0.0);
 
-    vec3 col1 = vec3(0.980, 0.0294, 0.0928);
+    vec3 col1 = frc;//vec3(0.980, 0.0294, 0.0928);
     vec3 col2 = fragColor;
 
     if(abs(lavaDist) < 10.0) {
@@ -198,7 +198,9 @@ void setFragColor(float lavaDist) {
         return;
     }
 
-    discard;
+
+ gl_FragColor = vec4(fragColor, 1.0);
+    // discard;
 
     return;
 
@@ -224,13 +226,13 @@ void setFragColor(float lavaDist) {
     } else {
         // gl_FragColor = texture2D(sampler, (glPos+1.0)*0.5);
         // gl_FragColor = vec4(fragColor, 0.3);
-        // gl_FragColor =texture2D(prerendered, uv);
+        // gl_FragColor =texture2D(preRendered, uv);
         discard;
     }
 }
 
 void main() {
-    vec4 pr = texture2D(prerendered, uv);
+    vec4 pr = texture2D(preRendered, uv);
 
     // if(pr.g > 0.5) {
     //     setFragColor(-1.0);

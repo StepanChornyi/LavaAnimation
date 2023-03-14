@@ -173,7 +173,7 @@ export default class ShapesController {
 
             bubble.x += (bubble.desiredX - bubble.x) * 0.01;
             bubble.y += bubble.vy;
-            bubble.s = (bubble.y * 2 - 700) / this.height;
+            bubble.s = (bubble.y * 2) / this.height;
 
             if (bubble.x < -bubble.radius * 2) {
                 bubble.x = this.width + bubble.radius * 1.5;

@@ -1,6 +1,10 @@
+const EMPTY_MESH_CONFIG = { vertexByteSize: 0, attribs: [], uniforms: [] };
+
 export default class Mesh {
-    constructor(gl, program) {
+    constructor(gl, program, config = EMPTY_MESH_CONFIG) {
         this.gl = gl;
+
+        config = Mesh.mergeConfigs(config, EMPTY_MESH_CONFIG);
 
         this.program = program;
         this.vertexBuffer = gl.createBuffer();
@@ -8,6 +12,31 @@ export default class Mesh {
 
         this.vertices = [];
         this.indices = [];
+
+        this.vertexByteSize = config.vertexByteSize;
+        this.attribs = [];
+        this.uniforms = {};
+
+        for (let i = 0, offset = 0; i < config.attribs.length; i++) {
+            const { name, size } = config.attribs[i];
+
+            this.attribs.push({
+                name,
+                location: gl.getAttribLocation(this.program, name),
+                size,
+                offset,
+            });
+
+            offset += size;
+        }
+
+        for (let i = 0; i < config.uniforms.length; i++) {
+            const uniformName = config.uniforms[i];
+
+            this.uniforms[uniformName] = {
+                location: gl.getUniformLocation(program, uniformName)
+            };
+        }
     }
 
     drawBuffersData() {
@@ -24,7 +53,29 @@ export default class Mesh {
 
     updateAttribPointers() {
         this.bindIndexBuffer();
+
+        const gl = this.gl;
+        const vertexByteSize = this.vertexByteSize;
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+
+        for (let i = 0; i < this.attribs.length; i++) {
+            const { location, size, offset } = this.attribs[i];
+
+            gl.vertexAttribPointer(
+                location,
+                size,
+                gl.FLOAT,
+                gl.FALSE,
+                vertexByteSize * Float32Array.BYTES_PER_ELEMENT,
+                offset * Float32Array.BYTES_PER_ELEMENT
+            );
+
+            gl.enableVertexAttribArray(location);
+        }
     }
+
+    setUniforms() { }
 
     bindIndexBuffer() {
         const gl = this.gl;
@@ -41,4 +92,12 @@ export default class Mesh {
 
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, offset);
     }
+
+    static mergeConfigs(config, fallbackConfig) {
+        return {
+            vertexByteSize: config.vertexByteSize || fallbackConfig.vertexByteSize,
+            attribs: config.attribs || fallbackConfig.attribs,
+            uniforms: [...(fallbackConfig.uniforms || []), ...(config.uniforms || [])]
+        };
+    };
 }
