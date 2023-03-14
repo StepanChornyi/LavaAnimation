@@ -5,12 +5,15 @@ import { BLEND_DIST_FACTOR, DATA_TEXTURE_SIZE_IVS, INT_OFFSET, INT_SCALE_IVS, MA
 
 import vs from "./lava.vs.glsl";
 import fsRaw from "./lava.fs.glsl";
+import Rect from '../../../Math/Shapes/Rect';
 
 const fs = fsRaw
     .replace("MAX_OBJECTS_COUNT", MAX_OBJECTS_COUNT)
     .replace("DATA_TEXTURE_SIZE_IVS", DATA_TEXTURE_SIZE_IVS)
     .replace("BLEND_DIST_FACTOR", BLEND_DIST_FACTOR.toFixed(1))
     .replace("INT_SCALE_IVS", INT_SCALE_IVS.toFixed(8))
+    .replace("INT_OFFSET", INT_OFFSET.toFixed(1))
+    .replace("INT_OFFSET", INT_OFFSET.toFixed(1))
     .replace("INT_OFFSET", INT_OFFSET.toFixed(1));
 
 const dataTextureXUnf = "dataTextureX";
@@ -20,7 +23,6 @@ const preRenderedUnf = "preRendered";
 
 const uniforms = [dataTextureXUnf, circlesCountUnf, shapesDataUnf, preRenderedUnf];
 
-const vertexByteSize = 5;
 const attribs = [
     {
         name: 'vertPosition',
@@ -31,10 +33,16 @@ const attribs = [
         size: 1
     },
     {
+        name: 'vertDataX',
+        size: 1
+    },
+    {
         name: 'vertUv',
         size: 2
     }
 ];
+
+const vertexByteSize = attribs.reduce((acc, attr) => (acc + attr.size), 0);
 
 export default class LavaMesh extends RectMesh {
     constructor(gl, program = LavaMesh.createProgram(gl)) {
@@ -71,7 +79,20 @@ export default class LavaMesh extends RectMesh {
         this.vertices = [];
         this.indices = [];
 
-        const rows = 10;
+        const boxes = this._getBoxes();
+
+        for (let i = 0; i < boxes.length; i++) {
+            this._addRect(boxes[i], i * 2);
+        }
+
+        this.drawBuffersData();
+
+        this.dirty = false;
+    }
+
+    _getBoxes() {
+        const boxes = [];
+        const rows = 4;
         const cols = rows;
 
         const segmentWidth = Math.floor(this.width / cols);
@@ -85,31 +106,29 @@ export default class LavaMesh extends RectMesh {
                 const w = (xx === cols - 1) ? lastSegmentWidth : segmentWidth;
                 const h = (yy === rows - 1) ? lastSegmentHeight : segmentHeight;
 
-                this._addRect(xx * segmentWidth, yy * segmentHeight, w, h);
+                boxes.push(new Rect(xx * segmentWidth, yy * segmentHeight, w, h));
             }
         }
 
-        this.drawBuffersData();
-
-        this.dirty = false;
+        return boxes;
     }
 
-    _addRect(x, y, w, h) {
+    _addRect(rect, i) {
         const [c0, c1, c2, c3] = this.colors;
 
         const offset = this.vertices.length / vertexByteSize;
         const RECT_INDICES = RectMesh.RECT_INDICES;
 
-        const ul = x / this.width;
-        const ur = (x + w) / this.width;
-        const vt = 1 - y / this.height;
-        const vb = 1 - (y + h) / this.height;
+        const ul = rect.x / this.width;
+        const ur = rect.right / this.width;
+        const vt = 1 - rect.y / this.height;
+        const vb = 1 - rect.bottom / this.height;
 
         this.vertices.push(
-            x, y, c0, ul, vt,
-            x + w, y, c1, ur, vt,
-            x + w, y + h, c2, ur, vb,
-            x, y + h, c3, ul, vb
+            rect.x, rect.y, c0, i, ul, vt,
+            rect.right, rect.y, c1, i, ur, vt,
+            rect.right, rect.bottom, c2, i, ur, vb,
+            rect.x, rect.bottom, c3, i, ul, vb
         );
 
         for (let i = 0; i < RECT_INDICES.length; i++) {

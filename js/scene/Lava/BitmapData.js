@@ -93,6 +93,12 @@ export default class BitmapData {
         this.setPixel(dataX + 1, dataY, w[0], w[1], h[0], h[1]);
     }
 
+    setCount(count, dataX, dataY) {
+        const c = numberTo2Bytes(count);
+
+        this.setPixel(dataX, dataY, c[0], c[1], 0, 0);
+    }
+
     setPixel(x, y, r, g, b, a) {
         const i = (x + this._imgData.width * y) * 4;
 

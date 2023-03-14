@@ -4,13 +4,14 @@ import Rect from '../../Math/Shapes/Rect';
 import Circle from '../../Math/Shapes/Circle';
 
 import BitmapData from './BitmapData';
-import { DATA_TEXTURE_SIZE } from './lavaConfig';
+import { BLEND_DIST_FACTOR, DATA_TEXTURE_SIZE } from './lavaConfig';
 
 import LavaMesh from './LavaMesh/LavaMesh';
 import ShapesController from './ShapesController';
 import { TEXTURE_DEBUG } from '../../animationConfig';
 
-const PRERENDER_SCALE = 0.25
+const BLEND_OFFSET = BLEND_DIST_FACTOR * 0.75;
+const PRERENDER_SCALE = 1;
 
 export default class Lava {
     constructor(gl, bitmapData, container) {
@@ -30,7 +31,7 @@ export default class Lava {
 
         this.ctx = this.canvas.getContext("2d");
 
-        if(TEXTURE_DEBUG){
+        if (TEXTURE_DEBUG) {
             this.canvas.style.position = "absolute";
             this.canvas.style.opacity = "0";
             this.canvas.style.width = "100%";
@@ -39,7 +40,7 @@ export default class Lava {
         }
 
         // this.lavaMesh.setColors( 0xf0851a, 0xf0851a, 0xe33345, 0xe33345);
-        this.lavaMesh.setColors( 0x2b073a, 0x570b32, 0x570b32, 0x2b073a);
+        this.lavaMesh.setColors(0x2b073a, 0x570b32, 0x570b32, 0x2b073a);
 
         this.transform = this.lavaMesh.transform;
         this.transformIvs = this.transform.clone().invert();
@@ -52,20 +53,60 @@ export default class Lava {
 
         const shapes = this.shapesController.shapes;
 
-        for (let i = 0; i < shapes.length; i++) {
-            const shape = shapes[i];
+        const boxes = this.lavaMesh._getBoxes();
 
-            if (shape.isCircle) {
-                this.bitmapData.setCircle(shapes[i], this.dataX, i);
-            } else if (shape.isRect) {
-                this.bitmapData.setRect(shapes[i], this.dataX, i);
+        const ll = [shapes.length];
+
+        for (let j = 0; j < boxes.length; j++) {
+            const box = boxes[j];
+            const group = [];
+
+            for (let i = 0; i < shapes.length; i++) {
+                const shape = shapes[i];
+
+                if (shape.isCircle) {
+                    const distX = Math.abs(box.centerX - shape.x);
+                    const distY = Math.abs(box.centerY - shape.y);
+
+                    const clipDistX = box.halfWidth + shape.radius + BLEND_OFFSET * 2;
+                    const clipDistY = box.halfHeight + shape.radius + BLEND_OFFSET * 2;
+
+                    if (distX < clipDistX && distY < clipDistY) {
+                        group.push(shape);
+                    }
+                } else if (shape.isRect) {
+                    const distX = Math.abs(box.centerX - shape.centerX);
+                    const distY = Math.abs(box.centerY - shape.centerY);
+
+                    const clipDistX = box.halfWidth + shape.halfWidth + BLEND_OFFSET * 2;
+                    const clipDistY = box.halfHeight + shape.halfHeight + BLEND_OFFSET * 2;
+
+                    if (distX < clipDistX && distY < clipDistY) {
+                        group.push(shape);
+                    }
+                }
+            }
+
+            
+
+            ll.push(group.length);
+            this.bitmapData.setCount(group.length, j * 2, 0);
+
+            for (let i = 0; i < group.length; i++) {
+                const shape = group[i];
+
+                if (shape.isCircle) {
+                    this.bitmapData.setCircle(shape, j * 2, i + 1);
+                } else if (shape.isRect) {
+                    this.bitmapData.setRect(shape, j * 2, i + 1);
+                }
             }
         }
 
         drawShapes(this.ctx, shapes);
     }
 
-    onResize(canvasWidth, canvasHeight){
+    onResize(canvasWidth, canvasHeight) {
         const width = canvasWidth;
         const height = canvasHeight;
 
@@ -101,7 +142,6 @@ export default class Lava {
         // this.bitmapData.updateAndBindTexture();
         this.optimizationTexture.updateAndBindTextureCanvas();
 
-
         this.lavaMesh.render(viewMatrix3x3);
     }
 
@@ -122,7 +162,7 @@ function rndSign() {
     return Math.random() < 0.5 ? -1 : 1;
 }
 
-function drawShapes(ctx, shapes){
+function drawShapes(ctx, shapes) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.globalCompositeOperation = "lighter";
     ctx.save()
@@ -151,15 +191,13 @@ function drawShapes(ctx, shapes){
         ctx.fillStyle = ColorHelper.intToRGBA(0x0000ff, 1)
         ctx.beginPath();
 
-        const blendDist = 100 * 0.75;
-
         if (shape.isCircle) {
             if (shape.radius - shapeOffset <= 0)
-            continue;
-            
-            ctx.arc(shape.x, shape.y, shape.radius + blendDist, 0, Math.PI * 2);
+                continue;
+
+            ctx.arc(shape.x, shape.y, shape.radius + BLEND_OFFSET, 0, Math.PI * 2);
         } else if (shape.isRect) {
-            ctx.rect(shape.x - blendDist, shape.y - blendDist, shape.width + blendDist * 2, shape.height + blendDist * 2);
+            ctx.rect(shape.x - BLEND_OFFSET, shape.y - BLEND_OFFSET, shape.width + BLEND_OFFSET * 2, shape.height + BLEND_OFFSET * 2);
         }
 
         ctx.closePath();

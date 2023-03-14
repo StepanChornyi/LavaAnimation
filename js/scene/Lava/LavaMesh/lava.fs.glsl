@@ -3,6 +3,7 @@ precision mediump float;
 varying vec3 fragColor;
 varying vec2 fragPos;
 varying vec2 uv;
+varying float dataX;
 
 uniform int dataTextureX;
 uniform int circlesCount;
@@ -58,6 +59,7 @@ float quadraticOutEase(float k) {
 
 float getDistanceToLava() {
     float distances[maxCount];
+    int circlesCount = int(int2bytesToFloat(getTextel(vec2(dataX, 0.0)).xy));
     int maxIndex = circlesCount - 1;
 
     for(int i = 0; i < maxCount; i++) {
@@ -65,7 +67,7 @@ float getDistanceToLava() {
             break;
         }
 
-        vec4 shape = getShape(float(dataTextureX), float(i));
+        vec4 shape = getShape(dataX, float(i+1));
 
         if(int(shape.w) <= 0) {
             distances[i] = distToCircle(shape.xyz, fragPos);
@@ -182,13 +184,13 @@ void setFragColor(float lavaDist) {
 
     vec3 frc = vec3(0.0, 1.0, 0.0);
 
-    vec3 col1 = frc;//vec3(0.980, 0.0294, 0.0928);
-    vec3 col2 = fragColor;
+    vec3 col1 = vec3(0.980, 0.0294, 0.0928);
+    vec3 col2 = vec3(0.0, 0.0, 0.0);
 
     if(abs(lavaDist) < 10.0) {
         float f = (lavaDist + 10.0) / 20.0;
 
-        gl_FragColor = vec4(mix( mix(col1, col2, 0.6), col2, 1.0-f), 1.0); //mix(glowColorBottom, glowColorTop, colorHeightMix);
+        gl_FragColor = vec4(mix(mix(col1, col2, 0.6), col2, 1.0 - f), 1.0); //mix(glowColorBottom, glowColorTop, colorHeightMix);
 
         return;
     }
@@ -197,7 +199,6 @@ void setFragColor(float lavaDist) {
         gl_FragColor = vec4(col2, 1.0);
         return;
     }
-
 
  gl_FragColor = vec4(fragColor, 1.0);
     // discard;
