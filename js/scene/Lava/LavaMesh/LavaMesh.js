@@ -77,8 +77,6 @@ export default class LavaMesh extends RectMesh {
         this.initUniformsAndAttribs({ uniforms, attribs });
         this.finalMaskedConfig = this.getCurrentConfig();
 
-        console.log( this.maskConfig,  this.maskedMaskConfig ,  this.finalMaskedConfig);
-
         this.maskEdgeOffset = -1;
 
         this.colors = [0xff0000, 0xffff00, 0xff00ff, 0x0000ff];
@@ -135,8 +133,9 @@ export default class LavaMesh extends RectMesh {
 
     _getBoxes() {
         const boxes = [];
-        const rows = 4;
-        const cols = rows;
+        const minCellSize = BLEND_DIST_FACTOR * 3;
+        const rows = Math.floor(this.height / minCellSize);
+        const cols = Math.floor(this.width / minCellSize);
 
         const segmentWidth = Math.floor(this.width / cols);
         const lastSegmentWidth = Math.floor(this.width - segmentWidth * (cols - 1));

@@ -63,8 +63,8 @@ export default class Lava {
                     const distX = Math.abs(box.centerX - shape.x);
                     const distY = Math.abs(box.centerY - shape.y);
 
-                    const clipDistX = shape.radius + BLEND_DIST_FACTOR * 3;
-                    const clipDistY = shape.radius + BLEND_DIST_FACTOR * 3;
+                    const clipDistX = shape.radius + BLEND_DIST_FACTOR * 8;
+                    const clipDistY = shape.radius + BLEND_DIST_FACTOR * 8;
 
                     if (distX < clipDistX && distY < clipDistY) {
                         group.push(shape);

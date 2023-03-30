@@ -20,7 +20,7 @@ export default class LavaDebugger {
 
         // if (TEXTURE_DEBUG) {
         this.canvas.style.position = "absolute";
-        this.canvas.style.opacity = "0.3";
+        this.canvas.style.opacity = "0.5";
         this.canvas.style.width = "100%";
         this.canvas.style.height = "100%";
         document.body.appendChild(this.canvas);
@@ -69,7 +69,7 @@ export default class LavaDebugger {
             ctx.closePath();
             ctx.fill();
     
-            ctx.fillStyle = ColorHelper.intToRGBA(0x0000ff, 1)
+            ctx.fillStyle = ColorHelper.intToRGBA(0x0000ff, 0.3)
             ctx.beginPath();
     
             if (shape.isCircle) {
