@@ -7,21 +7,35 @@ import vs from "./lava.vs.glsl";
 import fsRaw from "./lava.fs.glsl";
 import Rect from '../../../Math/Shapes/Rect';
 
-const fs = fsRaw
-    .replace("MAX_OBJECTS_COUNT", MAX_OBJECTS_COUNT)
-    .replace("DATA_TEXTURE_SIZE_IVS", DATA_TEXTURE_SIZE_IVS)
-    .replace("BLEND_DIST_FACTOR", BLEND_DIST_FACTOR.toFixed(1))
-    .replace("INT_SCALE_IVS", INT_SCALE_IVS.toFixed(8))
-    .replace("INT_OFFSET", INT_OFFSET.toFixed(1))
-    .replace("INT_OFFSET", INT_OFFSET.toFixed(1))
-    .replace("INT_OFFSET", INT_OFFSET.toFixed(1));
+const baseFs = replaceAllArr(fsRaw,
+    ["MAX_OBJECTS_COUNT", MAX_OBJECTS_COUNT],
+    ["DATA_TEXTURE_SIZE_IVS", DATA_TEXTURE_SIZE_IVS],
+    ["BLEND_DIST_FACTOR", BLEND_DIST_FACTOR.toFixed(1)],
+    ["INT_SCALE_IVS", INT_SCALE_IVS.toFixed(8)],
+    ["INT_OFFSET", INT_OFFSET.toFixed(1)],
+    ["MIN_RADIUS", -(INT_OFFSET - 1)]
+);
 
-const dataTextureXUnf = "dataTextureX";
-const circlesCountUnf = "circlesCount";
+const finalMaskedFs = replaceAllArr(baseFs,
+    ["RENDER_FUNC", "renderWithMask"],
+    ["SET_COLOR_FUNC", "setFragColor"],
+);
+
+const maskedMaskFs = replaceAllArr(baseFs,
+    ["RENDER_FUNC", "renderWithMask"],
+    ["SET_COLOR_FUNC", "setFragColorMask"],
+);
+
+const maskFs = replaceAllArr(baseFs,
+    ["RENDER_FUNC", "renderFull"],
+    ["SET_COLOR_FUNC", "setFragColorMask"],
+);
+
 const shapesDataUnf = "shapesData";
-const preRenderedUnf = "preRendered";
+const maskTextureUnf = "maskTexture";
+const maskEdgeOffsetUnf = "maskEdgeOffset";
 
-const uniforms = [dataTextureXUnf, circlesCountUnf, shapesDataUnf, preRenderedUnf];
+const uniforms = [shapesDataUnf, maskTextureUnf, maskEdgeOffsetUnf];
 
 const attribs = [
     {
@@ -42,16 +56,46 @@ const attribs = [
     }
 ];
 
-const vertexByteSize = attribs.reduce((acc, attr) => (acc + attr.size), 0);
+
 
 export default class LavaMesh extends RectMesh {
-    constructor(gl, program = LavaMesh.createProgram(gl)) {
-        super(gl, program, { vertexByteSize, uniforms, attribs });
+    constructor(gl) {
+        const maskProgram = WEBGL_UTILS.createProgram(gl, vs, maskFs);
+        const maskedMaskProgram = WEBGL_UTILS.createProgram(gl, vs, maskedMaskFs);
+        const finalMaskedProgram = WEBGL_UTILS.createProgram(gl, vs, finalMaskedFs);
 
-        this.elementsCount = 0;
-        this.dataX = 0;
+        super(gl, maskProgram, { uniforms, attribs });
+
+        this.maskConfig = this.getCurrentConfig();
+        console.log(uniforms);
+
+        this.program = maskedMaskProgram;
+        this.initUniformsAndAttribs({ uniforms, attribs });
+        this.maskedMaskConfig = this.getCurrentConfig();
+
+        this.program = finalMaskedProgram;
+        this.initUniformsAndAttribs({ uniforms, attribs });
+        this.finalMaskedConfig = this.getCurrentConfig();
+
+        console.log( this.maskConfig,  this.maskedMaskConfig ,  this.finalMaskedConfig);
+
+        this.maskEdgeOffset = -1;
 
         this.colors = [0xff0000, 0xffff00, 0xff00ff, 0x0000ff];
+    }
+
+    setConfig({ program, attribs, uniforms }) {
+        this.program = program;
+        this.attribs = attribs;
+        this.uniforms = uniforms;
+    }
+
+    getCurrentConfig() {
+        return {
+            program: this.program,
+            uniforms: this.uniforms,
+            attribs: this.attribs,
+        };
     }
 
     setUniforms(_) {
@@ -59,10 +103,9 @@ export default class LavaMesh extends RectMesh {
 
         const { gl, uniforms } = this;
 
-        gl.uniform1i(uniforms[dataTextureXUnf].location, this.dataX);
-        gl.uniform1i(uniforms[circlesCountUnf].location, this.elementsCount);
         gl.uniform1i(uniforms[shapesDataUnf].location, 0);
-        gl.uniform1i(uniforms[preRenderedUnf].location, 1);
+        gl.uniform1i(uniforms[maskTextureUnf].location, 1);
+        gl.uniform1f(uniforms[maskEdgeOffsetUnf].location, this.maskEdgeOffset);
     }
 
     setColors(topLeft, topRight = topLeft, bottomRight = topRight, bottomLeft = bottomRight) {
@@ -116,7 +159,7 @@ export default class LavaMesh extends RectMesh {
     _addRect(rect, i) {
         const [c0, c1, c2, c3] = this.colors;
 
-        const offset = this.vertices.length / vertexByteSize;
+        const offset = this.vertices.length / this.vertexByteSize;
         const RECT_INDICES = RectMesh.RECT_INDICES;
 
         const ul = rect.x / this.width;
@@ -142,8 +185,20 @@ export default class LavaMesh extends RectMesh {
 
         super.render(_);
     }
+}
 
-    static createProgram(gl) {
-        return WEBGL_UTILS.createProgram(gl, vs, fs);
+function replaceAllArr(str, ...arr) {
+    for (let i = 0; i < arr.length; i++) {
+        str = replaceAll(str, arr[i][0], arr[i][1]);
     }
+
+    return str;
+}
+
+function replaceAll(str, key, val) {
+    while (str.indexOf(key) >= 0) {
+        str = str.replace(key, val);
+    }
+
+    return str;
 }

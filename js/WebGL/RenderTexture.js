@@ -16,14 +16,19 @@ export default class RenderTexture {
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
-       
+
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
-    bindFramebuffer(){
-        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.frameBuffer);
-        this.gl.viewport(0, 0, this.width, this.height);
+    bindFramebuffer(clear = true) {
+        const gl = this.gl;
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+        gl.clearColor(0, 0, 0, 0);
+        gl.colorMask(true, true, true, true);
+        gl.viewport(0, 0, this.width, this.height);
+        clear && gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     }
 
     setSize(width, height) {

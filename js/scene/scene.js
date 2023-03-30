@@ -21,18 +21,18 @@ export default class Scene extends DisplayObject {
         this.canvas = container.getElementsByTagName("canvas")[0];
         this.gl = WEBGL_UTILS.getWebGlContext(this.canvas);
 
-        this.renderTexture = new RenderTexture(this.gl);
+        // this.renderTexture = new RenderTexture(this.gl);
 
-        this.renderTexture.setSize(window.innerWidth, window.innerHeight);
+        // this.renderTexture.setSize(window.innerWidth, window.innerHeight);
 
-        this.spriteGl = new SpriteGl(this.gl);
-        this.spriteGl.setColors(0x2b073a, 0x570b32, 0x570b32, 0x2b073a);
+        // this.spriteGl = new SpriteGl(this.gl);
+        // this.spriteGl.setColors(0x2b073a, 0x570b32, 0x570b32, 0x2b073a);
 
-        this.spriteGl.texture = this.renderTexture.texture;
-        this.spriteGl.setSize(this.renderTexture.width, this.renderTexture.height);
+        // this.spriteGl.texture = this.renderTexture.texture;
+        // this.spriteGl.setSize(this.renderTexture.width, this.renderTexture.height);
 
 
-        this.skipFilter = new SkipFilter(this.gl);
+        // this.skipFilter = new SkipFilter(this.gl);
 
         // this.canvas.style.display = "none";
 
@@ -70,9 +70,7 @@ export default class Scene extends DisplayObject {
 
         this.background = new Background(gl);
 
-        const bitmapData = new BitmapData(gl, DATA_TEXTURE_SIZE).initImageData();
-
-        this.lava = new Lava(gl, bitmapData, this.container);
+        this.lava = new Lava(gl);
     }
 
     onRender() {
@@ -98,8 +96,6 @@ export default class Scene extends DisplayObject {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 
-        this.lava.updateShapesData();
-        this.lava.bitmapData.updateAndBindTexture();
         this.lava.render(this.viewMatrix);
 
         // this.skipFilter.render(this.viewMatrix, this.renderTexture.texture);
@@ -146,23 +142,17 @@ export default class Scene extends DisplayObject {
         this.cachedWidth = container.offsetWidth;
         this.cachedHeight = container.offsetHeight;
 
-        const width = this.cachedWidth * scale;
-        const height = this.cachedHeight * scale;
+        canvas.width = Math.ceil(this.cachedWidth * scale);
+        canvas.height = Math.ceil(this.cachedHeight * scale);
 
-        canvas.width = width;
-        canvas.height = height;
+        gl.viewport(0, 0, canvas.width, canvas.height);
 
-        // this.ctx.canvas.width = width;
-        // this.ctx.canvas.height = height;
+        this.lava.onResize(this.cachedWidth, this.cachedHeight, canvas.width, canvas.height);
 
-        gl.viewport(0, 0, width, height);
-
-        this.lava.onResize(width, height, scale);
-
-        this.spriteGl.setSize(width, height);
+        // this.spriteGl.setSize(width, height);
         // this.skipFilter.onResize(width, height);
 
-        this._updateViewMatrix(width, height);
+        this._updateViewMatrix(this.cachedWidth, this.cachedHeight);
     }
 
     _updateViewMatrix(width, height) {

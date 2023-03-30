@@ -59,6 +59,7 @@ export default class BitmapData {
             for (let x = 0, count = 0, prevC; x < this._imgData.height; x++) {
                 prevC = count;
                 count = d[x * 4];
+                break;///TMP
 
                 for (let y = 0; y < this._imgData.width; y++) {
                     const i = (y * this._imgData.width + x) * 4;
@@ -106,6 +107,13 @@ export default class BitmapData {
 
         this.setPixel(dataX, dataY, x[0], x[1], y[0], y[1]);
         this.setPixel(dataX + 1, dataY, w[0], w[1], h[0], h[1]);
+    }
+
+    setEmpty(dataX, dataY) {
+        const x = numberTo2Bytes(-1);
+
+        this.setPixel(dataX, dataY, x[0], x[1], x[0], x[1]);
+        this.setPixel(dataX + 1, dataY, x[0], x[1], x[0], x[1]);
     }
 
     setCount(count, dataX, dataY) {

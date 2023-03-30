@@ -1,10 +1,8 @@
-const EMPTY_MESH_CONFIG = { vertexByteSize: 0, attribs: [], uniforms: [] };
+const EMPTY_MESH_CONFIG = { attribs: [], uniforms: [] };
 
 export default class Mesh {
     constructor(gl, program, config = EMPTY_MESH_CONFIG) {
         this.gl = gl;
-
-        config = Mesh.mergeConfigs(config, EMPTY_MESH_CONFIG);
 
         this.program = program;
         this.vertexBuffer = gl.createBuffer();
@@ -13,7 +11,16 @@ export default class Mesh {
         this.vertices = [];
         this.indices = [];
 
-        this.vertexByteSize = config.vertexByteSize;
+        this.initUniformsAndAttribs(config);
+    }
+
+    initUniformsAndAttribs(config) {
+        const gl = this.gl;
+        const program = this.program;
+
+        config = Mesh.mergeConfigs(config, EMPTY_MESH_CONFIG);
+
+        this.vertexByteSize = config.attribs.reduce((acc, attr) => (acc + attr.size), 0);
         this.attribs = [];
         this.uniforms = {};
 
@@ -95,7 +102,6 @@ export default class Mesh {
 
     static mergeConfigs(config, fallbackConfig) {
         return {
-            vertexByteSize: config.vertexByteSize || fallbackConfig.vertexByteSize,
             attribs: config.attribs || fallbackConfig.attribs,
             uniforms: [...(fallbackConfig.uniforms || []), ...(config.uniforms || [])]
         };

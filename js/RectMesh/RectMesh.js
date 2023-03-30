@@ -7,7 +7,6 @@ import fs from "./baseRect.fs.glsl";
 import Mesh2D from "../Mesh2D/Mesh2D";
 
 const currentConfig = {
-    vertexByteSize: 7,
     attribs: [
         {
             name: 'vertPosition',
@@ -28,7 +27,7 @@ const RECT_INDICES = [0, 1, 2, 2, 3, 0];
 
 export default class RectMesh extends Mesh2D {
     constructor(gl, program = WEBGL_UTILS.createProgram(gl, vs, fs), config = currentConfig) {
-        super(gl, program, Mesh.mergeConfigs(config, currentConfig));
+        super(gl, program, config);
 
         this.width = 0;
         this.height = 0;
@@ -36,6 +35,10 @@ export default class RectMesh extends Mesh2D {
         this.dirty = true;
 
         this.indices = [...RECT_INDICES];
+    }
+
+    initUniformsAndAttribs(config) {
+        super.initUniformsAndAttribs(Mesh.mergeConfigs(config, currentConfig));
     }
 
     setSize(width = this.width, height = width) {

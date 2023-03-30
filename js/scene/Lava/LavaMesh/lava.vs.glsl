@@ -16,7 +16,7 @@ uniform mat3 viewTransform;
 void main() {
   fragColor = vec3(vertColor / (256.0 * 256.0), mod(vertColor / 256.0, 256.0), mod(vertColor, 256.0)) * (1.0 / 255.0);
   
-  uv = vec2(vertUv.x, 1.0 - vertUv.y);
+  uv = vertUv;
 
   dataX = vertDataX;
   fragPos = vertPosition;

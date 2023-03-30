@@ -5,12 +5,9 @@ varying vec2 fragPos;
 varying vec2 uv;
 varying float dataX;
 
-uniform int dataTextureX;
-uniform int circlesCount;
-uniform float lavaOffset;
-
+uniform float maskEdgeOffset;
 uniform sampler2D shapesData;
-uniform sampler2D preRendered;
+uniform sampler2D maskTexture;
 
 //external constants will be replaced before compilation
 
@@ -63,19 +60,16 @@ float quadraticOutEase(float k) {
 
 float getDistanceToLava() {
     float distances[maxCount];
-    int circlesCount = getShapesCount();
-    int maxIndex = circlesCount - 1;
-
-    if(circlesCount == 0) {
-        return 9999.0;
-    }
+    int circlesCount = -1;
+    int maxIndex = -1;
 
     for(int i = 0; i < maxCount; i++) {
-        if(i > maxIndex) {
+        vec4 shape = getShape(dataX, float(i));
+
+        if(int(shape.z) < MIN_RADIUS) {
+            circlesCount = i;
             break;
         }
-
-        vec4 shape = getShape(dataX, float(i + 1));
 
         if(int(shape.w) <= 0) {
             distances[i] = distToCircle(shape.xyz, fragPos);
@@ -98,6 +92,7 @@ float getDistanceToLava() {
         if(i > maxIndex) {
             break;
         }
+
         distances[i] = blendDist(distances[i], distances[i + 1], blendDistFactor);
     }
 
@@ -183,72 +178,73 @@ float getDistanceToLava() {
 }
 
 void setFragColor(float lavaDist) {
-    float glowSize = 1.5 + lavaOffset;
-    float bloomSize = glowSize + 5.0 + lavaOffset;
+    float glowSize = 1.5;
     float colorHeightMix = (uv.y + 1.0) * 0.5;
 
     // vec4 glowColorBottom = vec4(0.94, 0.52, 0.1, 1.0);
     // vec4 glowColorTop = vec4(0.89, 0.2, 0.27, 1.0);
 
-    vec3 frc = vec3(0.0, 1.0, 0.0);
+    // vec3 col1 = vec3(0.980, 0.0294, 0.0928);
+    // vec3 col2 = vec3(0.89, 0.2, 0.27);
 
-    vec3 col1 = vec3(0.980, 0.0294, 0.0928);
-    vec3 col2 = vec3(0.89, 0.2, 0.27);
+    vec3 baseColor = vec3(uv, 0.0);
 
-    if(abs(lavaDist) < 10.0) {
-        float f = (lavaDist + 10.0) / 20.0;
+    if(lavaDist < 0.0) {
+        gl_FragColor = vec4(baseColor, 1.0);
+        return;
+    }
 
-        gl_FragColor = vec4(mix(mix(col1, col2, 0.6), col2, 1.0 - f), 1.0); //mix(glowColorBottom, glowColorTop, colorHeightMix);
+    float fadeDist = 2.0;
 
+    if(lavaDist < fadeDist) {
+        float f = 1.0 - lavaDist / fadeDist;
+
+        gl_FragColor = vec4(mix(baseColor, vec3(0.0, 0.0, 1.0), 1.0-f), f);
+        // gl_FragColor = vec4(f, 1.0, 0.0, 1.0);
+        return;
+    }
+
+    discard;
+
+    // gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+}
+
+void setFragColorMask(float lavaDist) {
+    if(abs(lavaDist) < 1.0) {
+        gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+        return;
+    }
+
+    if(abs(lavaDist) < maskEdgeOffset) {
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
         return;
     }
 
     if(lavaDist < 0.0) {
-        gl_FragColor = vec4(col2, 1.0);
+        gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
         return;
     }
 
-    gl_FragColor = vec4(fragColor, 0.0);
-    // discard;
+    gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+}
 
-    return;
+void renderWithMask() {
+    vec4 mask = texture2D(maskTexture, uv);
 
-    if(lavaDist < (10.0 + lavaOffset)) {
-        gl_FragColor = vec4(frc, 1.0); //mix(glowColorBottom, glowColorTop, colorHeightMix);
-    } else if(lavaDist <= glowSize) {
-        float glowFactor = quadraticOutEase(1.0 - lavaDist / glowSize);
-
-        vec4 colorTop = vec4(1.0, 0.0, 0.0, glowFactor); //vec4(0.85098, 0.03921, 0.08627, glowFactor);
-        vec4 colorBot = vec4(1.0, 0.0, 0.0, glowFactor); //vec4(0.850, 0.0425, 0.460, glowFactor);
-
-        vec4 glowColor = mix(mix(colorTop, colorBot, colorHeightMix), vec4(frc, 1.0), glowFactor);
-
-        gl_FragColor = glowColor;
-
-    } else if(lavaDist <= bloomSize) {
-        vec3 col = vec3(0.0, 0.0, 0.0);
-
-        float glowFactor = quadraticOutEase(1.0 - lavaDist / bloomSize) * 0.3;
-
-        gl_FragColor = vec4(frc, glowFactor);
-
+    if(mask.z > 0.5) {
+        SET_COLOR_FUNC(999.0);
+    } else if(mask.x > 0.5) {
+        SET_COLOR_FUNC(getDistanceToLava());
     } else {
-        // gl_FragColor = texture2D(sampler, (glPos+1.0)*0.5);
-        // gl_FragColor = vec4(fragColor, 0.3);
-        // gl_FragColor =texture2D(preRendered, uv);
-        discard;
+        SET_COLOR_FUNC(-999.0);
+        // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
     }
 }
 
-void main() {
-    vec4 pr = texture2D(preRendered, uv);
+void renderFull() {
+    SET_COLOR_FUNC(getDistanceToLava());
+}
 
-    // if(pr.g > 0.5) {
-    //     setFragColor(-1.0);
-    // } else 
-    // if(pr.b < 0.5) {
-    //     setFragColor(999.0);
-    // } else {
-    setFragColor(getDistanceToLava());
-    // }
+void main() {
+    RENDER_FUNC();//external renderWithMask|renderFull
 }

@@ -17,11 +17,15 @@ const currentConfig = {
 
 export default class Mesh2D extends Mesh {
     constructor(gl, program = WEBGL_UTILS.createProgram(gl, vs, fs), config = currentConfig) {
-        super(gl, program, Mesh.mergeConfigs(config, currentConfig));
+        super(gl, program, config);
 
         this.transform = new Matrix();
 
         this._transformDataArr = new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]);
+    }
+
+    initUniformsAndAttribs(config) {
+        super.initUniformsAndAttribs(Mesh.mergeConfigs(config, currentConfig));
     }
 
     _updateBuffers() { }

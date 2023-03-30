@@ -1,7 +1,4 @@
-import BaseRectMesh from "../../RectMesh/RectMesh";
-
-// const topColor = 0xb13d3d;
-// const bottomColor = 0x32146e;
+import RectMesh from "../../RectMesh/RectMesh";
 
 import vs from "./spriteGl.vs.glsl";
 import fs from "./spriteGl.fs.glsl";
@@ -10,7 +7,7 @@ import WEBGL_UTILS from "../../WebGL/WebglUtils";
 const topColor = 0x151111;
 const bottomColor = 0x2e1607;
 
-export default class SpriteGl extends BaseRectMesh {
+export default class SpriteGl extends RectMesh {
   constructor(gl, fragment = fs) {
     super(gl, WEBGL_UTILS.createProgram(gl, vs, fragment));
 
