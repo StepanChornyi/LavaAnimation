@@ -10,28 +10,8 @@ import RenderTexture from '../WebGL/RenderTexture';
 import SpriteGl from './SpriteGL/SpriteGl';
 import SkipFilter from './Post/SkipFilter';
 
-const f1 = 0.541;
-const f2 = 0.349;
-
-
-const rgb1 = ColorHelper.hex2rgb(0xe33385);
-
-rgb1.r = Math.round((rgb1.r) * f1);
-rgb1.g = Math.round((rgb1.g) * f1);
-rgb1.b = Math.round((rgb1.b) * f1);
-
-
-const rgb2 = ColorHelper.hex2rgb(0xc01af0);
-
-rgb2.r = Math.round((rgb2.r) * f2);
-rgb2.g = Math.round((rgb2.g) * f2);
-rgb2.b = Math.round((rgb2.b) * f2);
-
-
-console.log(rgb1.r.toFixed(0), rgb1.g.toFixed(0), rgb1.b.toFixed(0), "|", rgb2.r.toFixed(0), rgb2.g.toFixed(0), rgb2.b.toFixed(0));
-
 export default class Scene extends DisplayObject {
-    constructor(container, ss = 1) {
+    constructor(container) {
         super();
 
         this.container = container;
@@ -40,8 +20,6 @@ export default class Scene extends DisplayObject {
 
         this.canvas = container.getElementsByTagName("canvas")[0];
         this.gl = WEBGL_UTILS.getWebGlContext(this.canvas);
-
-        this.ss = ss;
 
         this.renderTexture = new RenderTexture(this.gl);
 
