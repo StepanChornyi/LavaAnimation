@@ -27,7 +27,7 @@ export default class Lava {
 
         this.image = new FullScreenImage(gl);
 
-        // this.debugger = new LavaDebugger(this.shapesController);
+        this.debugger = new LavaDebugger(this.shapesController, this.lavaMesh);
 
         // this.lavaMesh.setColors( 0xf0851a, 0xf0851a, 0xe33345, 0xe33345);
         this.lavaMesh.setColors(0x2b073a, 0x570b32, 0x570b32, 0x2b073a);
@@ -45,6 +45,8 @@ export default class Lava {
 
         const shapes = this.shapesController.shapes;
 
+        this.debugger && (this.debugger.shapes = shapes);
+
         const boxes = this.lavaMesh._getBoxes();
 
         for (let j = 0; j < boxes.length; j++) {
@@ -54,15 +56,15 @@ export default class Lava {
             for (let i = 0; i < shapes.length; i++) {
                 const shape = shapes[i];
 
-                group.push(shape);
-                continue;
+                // group.push(shape);
+                // continue;
 
                 if (shape.isCircle) {
                     const distX = Math.abs(box.centerX - shape.x);
                     const distY = Math.abs(box.centerY - shape.y);
 
-                    const clipDistX = box.halfWidth + shape.radius + BLEND_DIST_FACTOR * 2;
-                    const clipDistY = box.halfHeight + shape.radius + BLEND_DIST_FACTOR * 2;
+                    const clipDistX = shape.radius + BLEND_DIST_FACTOR * 3;
+                    const clipDistY = shape.radius + BLEND_DIST_FACTOR * 3;
 
                     if (distX < clipDistX && distY < clipDistY) {
                         group.push(shape);
@@ -78,6 +80,10 @@ export default class Lava {
                         group.push(shape);
                     }
                 }
+            }
+
+            if (this.debugger && this.shapesController.activeBoxIndex === j) {
+                this.debugger.shapes = group
             }
 
             // this.bitmapData.setCount(group.length, j * 2, 0);
@@ -116,6 +122,8 @@ export default class Lava {
 
         this.shapesController.onResize(sceneWidth, sceneHeight);
 
+        this.shapesController.setBoxes(this.lavaMesh._getBoxes());
+
         this.debugger && this.debugger.onResize(sceneWidth, sceneHeight);
     }
 
@@ -143,7 +151,7 @@ export default class Lava {
         gl.colorMask(true, true, true, true);
         gl.viewport(0, 0, this.canvasWidth, this.canvasHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      
+
         {
             // this.image.texture = mask.texture;
             // this.image.render(viewMatrix3x3);
@@ -154,12 +162,15 @@ export default class Lava {
             gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, mask.texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    
+
             lavaMesh.setConfig(lavaMesh.finalMaskedConfig);
             // lavaMesh.setConfig(lavaMesh.maskConfig);
             lavaMesh.render(viewMatrix3x3);
         }
 
-        // this.debugger && this.debugger.render();
+        if (this.debugger) {
+            this.debugger.highLightBoxIndex = this.shapesController.activeBoxIndex;
+            this.debugger.render();
+        }
     }
 }

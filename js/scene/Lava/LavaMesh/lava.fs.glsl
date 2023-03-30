@@ -187,7 +187,7 @@ void setFragColor(float lavaDist) {
     // vec3 col1 = vec3(0.980, 0.0294, 0.0928);
     // vec3 col2 = vec3(0.89, 0.2, 0.27);
 
-    vec3 baseColor = vec3(uv, 0.0);
+    vec3 baseColor = vec3(0.91, 0.11, 0.38);
 
     if(lavaDist < 0.0) {
         gl_FragColor = vec4(baseColor, 1.0);

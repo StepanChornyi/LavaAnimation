@@ -17,7 +17,7 @@ export default class ShapesController {
 
         this.width = this.height = 1;
 
-        this.ground = new Rect();
+        this.ground = new RectBody();
         this.groundCircles = [];
         this.bubbles = [];
 
@@ -29,7 +29,7 @@ export default class ShapesController {
 
             this.groundCircles.push(ground);
 
-            this._animateGround(ground);
+            // this._animateGround(ground);
         }
 
         for (let i = 0; i < 20; i++) {
@@ -37,56 +37,70 @@ export default class ShapesController {
         }
 
         this.shapes = [
-            this.ground,
-            ...this.groundCircles,
+            // this.ground,
+            // ...this.groundCircles,
             ...this.bubbles
         ];
 
-        window.addEventListener("wheel", (e) => {
-            // for (let i = 0; i < this.bubbles.length; i++) {
-            //     const y = this.bubbles[i].y / this.height;
 
+        // this._initMouseControl(this.shapes[0]);
 
-            //     this.bubbles[i].desiredX += e.deltaY * (this.mirrored ? 1 : -1) * y;
-            // }
+        let snappedShape = null;
+        const startShapePos = new Vector();
+        const startMousePos = new Vector();
 
-            for (let i = 0; i < this.groundCircles.length; i++) {
-                const startR = this.groundCircles[i].r;
+        this.activeBoxIndex = -1;
+        this.boxes = [];
 
-                let tw = new UTween(this.groundCircles[i], { r: 1000 }, 1.5, {
-                    ease: Ease.backIn,
-                })
+        window.addEventListener('mousedown', e => {
+            const { x, y } = startMousePos.set(e.clientX, e.clientY)//this.transformIvs.transformVector(new Vector(e.clientX, e.clientY));
 
-                tw.on("update", () => {
-                    if (i) return;
+            for (let i = 0; i < this.shapes.length; i++) {
+                if (this.shapes[i].contains(x, y)) {
+                    snappedShape = this.shapes[i];
+                    startShapePos.copyFrom(snappedShape);
+                    return;
+                }
+            }
 
-                    document.body.style.filter = `brightness(${1 - Math.max(0, MathEx.lerp(-1, 1, tw.elapsed))})`;
-
-                    // this.grd.style.opacity = `${1 - Math.max(0, MathEx.lerp(-1, 1, tw.elapsed))}`;
-                });
-
-                tw.once("complete", () => {
-                    tw = new UTween(this, { a: 0 }, 2, {
-                        ease: Ease.cubicInOut,
-                    })
-
-                    tw.on("update", () => {
-                        if (i) return;
-
-                        document.body.style.filter = `brightness(${tw.elapsed})`;
-                        // this.grd.style.opacity = `${tw.elapsed}`;
-                    });
-
-                    new UTween(this.groundCircles[i], { r: startR, delay: 0.3 }, 2, {
-                        ease: Ease.cubicInOut,
-                    })
-                });
-
-
+            for (let i = 0; i < this.boxes.length; i++) {
+                if (this.boxes[i].contains(x, y)) {
+                    if (this.activeBoxIndex === i) {
+                        this.activeBoxIndex = -1
+                    } else {
+                        this.activeBoxIndex = i
+                    }
+                    return;
+                }
             }
         });
 
-        // this._initMouseControl(this.shapes[0]);
+        window.addEventListener('mouseup', e => {
+            snappedShape = null;
+        });
+
+
+
+        window.addEventListener('mousemove', e => {
+            if (!snappedShape)
+                return;
+
+            const { x, y } = tmpVec.set(e.clientX, e.clientY)//this.transformIvs.transformVector(new Vector(e.clientX, e.clientY));
+
+            snappedShape.x = startShapePos.x + x - startMousePos.x;
+            snappedShape.y = startShapePos.y + y - startMousePos.y;
+        });
+
+    }
+
+    setBoxes(arr) {
+        this.boxes = [];
+
+        for (let i = 0; i < arr.length; i++) {
+            const { x, y, w, h } = arr[i];
+
+            this.boxes.push(new RectBody(x - w * 0.5, y - h * 0.5, w, h));
+        }
     }
 
     _initMouseControl(shape) {
@@ -101,26 +115,26 @@ export default class ShapesController {
         });
     }
 
-    _animateGround(g) {
-        for (let i = 0; i < g.tw.length; i++) {
-            g.tw[i].kill();
-        }
+    // _animateGround(g) {
+    //     for (let i = 0; i < g.tw.length; i++) {
+    //         g.tw[i].kill();
+    //     }
 
-        const tw1 = new UTween(g, { s: 1.3 }, 10 + 5 * Math.random(), {
-            ease: Ease.sinusoidalInOut,
-            loop: true,
-            yoyo: true,
-            ease: Ease.sinusoidalInOut,
-        });
+    //     const tw1 = new UTween(g, { s: 1.3 }, 10 + 5 * Math.random(), {
+    //         ease: Ease.sinusoidalInOut,
+    //         loop: true,
+    //         yoyo: true,
+    //         ease: Ease.sinusoidalInOut,
+    //     });
 
-        const tw2 = new UTween(g, { y: g.y + (Math.random() * 0.5) * 200 }, 5 + 10 * Math.random(), {
-            ease: Ease.quarticInOut,
-            yoyo: true,
-            loop: true
-        });
+    //     const tw2 = new UTween(g, { y: g.y + (Math.random() * 0.5) * 200 }, 5 + 10 * Math.random(), {
+    //         ease: Ease.quarticInOut,
+    //         yoyo: true,
+    //         loop: true
+    //     });
 
-        g.tw = [tw1, tw2];
-    }
+    //     g.tw = [tw1, tw2];
+    // }
 
 
     onResize(width, height) {
@@ -139,7 +153,7 @@ export default class ShapesController {
             g.y = this.ground.top - 100;
             g.r = (50 + 90 * Math.random()) * 0.5;
 
-            this._animateGround(g);
+            // this._animateGround(g);
         }
 
         for (let i = 0; i < this.bubbles.length; i++) {
@@ -155,6 +169,8 @@ export default class ShapesController {
     }
 
     onUpdate() {
+
+        return;
         for (let i = 0; i < this.groundCircles.length; i++) {
             const groundCircle = this.groundCircles[i];
             const { d, sX } = groundCircle;
@@ -263,11 +279,33 @@ class CircleBody extends Circle {
     get radius() {
         return this.r * this.s;
     }
+
+    contains(x, y) {
+        const dx = Math.abs(this.x - x)
+        const dy = Math.abs(this.y - y)
+
+        if (dx > this.radius || dy > this.radius) {
+            return false;
+        }
+
+        return Math.sqrt(dx * dx, dy * dy) <= this.radius;
+    }
 }
 
 class RectBody extends Rect {
     constructor(...args) {
         super(...args);
+    }
+
+    contains(x, y) {
+        const dx = Math.abs(this.centerX - x)
+        const dy = Math.abs(this.centerY - y)
+
+        if (dx < this.width && dy < this.height) {
+            return true;
+        }
+
+        return false;
     }
 }
 
@@ -278,3 +316,47 @@ function rndBtw(a, b) {
 function rndSign() {
     return Math.random() < 0.5 ? -1 : 1;
 }
+
+// window.addEventListener("wheel", (e) => {
+//     // for (let i = 0; i < this.bubbles.length; i++) {
+//     //     const y = this.bubbles[i].y / this.height;
+
+
+//     //     this.bubbles[i].desiredX += e.deltaY * (this.mirrored ? 1 : -1) * y;
+//     // }
+
+//     for (let i = 0; i < this.groundCircles.length; i++) {
+//         const startR = this.groundCircles[i].r;
+
+//         let tw = new UTween(this.groundCircles[i], { r: 1000 }, 1.5, {
+//             ease: Ease.backIn,
+//         })
+
+//         tw.on("update", () => {
+//             if (i) return;
+
+//             document.body.style.filter = `brightness(${1 - Math.max(0, MathEx.lerp(-1, 1, tw.elapsed))})`;
+
+//             // this.grd.style.opacity = `${1 - Math.max(0, MathEx.lerp(-1, 1, tw.elapsed))}`;
+//         });
+
+//         tw.once("complete", () => {
+//             tw = new UTween(this, { a: 0 }, 2, {
+//                 ease: Ease.cubicInOut,
+//             })
+
+//             tw.on("update", () => {
+//                 if (i) return;
+
+//                 document.body.style.filter = `brightness(${tw.elapsed})`;
+//                 // this.grd.style.opacity = `${tw.elapsed}`;
+//             });
+
+//             new UTween(this.groundCircles[i], { r: startR, delay: 0.3 }, 2, {
+//                 ease: Ease.cubicInOut,
+//             })
+//         });
+
+
+//     }
+// });
