@@ -8,5 +8,5 @@ void main() {
     vec4 texColor = texture2D(spriteTexture, uv);
 
     // gl_FragColor = vec4(1.0, 1.0, 0.0, 0.5);
-    gl_FragColor = texColor;
+    gl_FragColor = vec4(texColor.xyz/300.0, 0.5);
 }

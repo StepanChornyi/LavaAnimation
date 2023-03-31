@@ -37,8 +37,8 @@ export default class ShapesController {
         }
 
         this.shapes = [
-            // this.ground,
-            // ...this.groundCircles,
+            this.ground,
+            ...this.groundCircles,
             ...this.bubbles
         ];
 
@@ -170,7 +170,7 @@ export default class ShapesController {
 
     onUpdate() {
 
-        return;
+        // return;
         for (let i = 0; i < this.groundCircles.length; i++) {
             const groundCircle = this.groundCircles[i];
             const { d, sX } = groundCircle;

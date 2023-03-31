@@ -41,7 +41,7 @@ export default class FullScreenImage extends Mesh {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-    gl.uniform1i(gl.getUniformLocation(this.program, "spriteTexture"), 0);
+    // gl.uniform1i(gl.getUniformLocation(this.program, "spriteTexture"), 0);
   }
 
   render(viewMatrix3x3) {
