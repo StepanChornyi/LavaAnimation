@@ -11,6 +11,7 @@ import { TEXTURE_DEBUG } from '../../animationConfig';
 import LavaDebugger from './LavaDebugger';
 import RenderTexture from '../../WebGL/RenderTexture';
 import FullScreenImage from '../FullScreenImage/FullScreenImage';
+import DataTexture from './DataTexture';
 
 export default class Lava {
     constructor(gl) {
@@ -32,36 +33,9 @@ export default class Lava {
         this.transform = this.lavaMesh.transform;
         this.transformIvs = this.transform.clone().invert();
 
-        const texture = this.texture = gl.createTexture();
+        this.dataTexture = new DataTexture(gl, DATA_TEXTURE_SIZE);
 
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-        this.lavaMesh.dataTexture = texture;
-
-        this.data = new Float32Array(DATA_TEXTURE_SIZE * DATA_TEXTURE_SIZE * 4);
-    }
-
-    drawData() {
-        const gl = this.gl;
-
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, DATA_TEXTURE_SIZE, DATA_TEXTURE_SIZE, 0, gl.RGBA, gl.FLOAT, this.data);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-    }
-
-    setData(dataX, dataY, r, g, b, a) {
-        const width = DATA_TEXTURE_SIZE;
-
-        const index = (dataY * width + dataX) * 4;
-
-        this.data[index] = r;
-        this.data[index + 1] = g;
-        this.data[index + 2] = b;
-        this.data[index + 3] = a;
+        this.lavaMesh.dataTexture =  this.dataTexture.texture;
     }
 
     updateShapesData() {
@@ -114,16 +88,18 @@ export default class Lava {
                 const shape = group[i];
 
                 if (shape.isCircle) {
-                    this.setData(j, i, shape.x, shape.y, shape.radius, -1);
+                    this.dataTexture.set(j, i, shape.x, shape.y, shape.radius, -1);
                 } else if (shape.isRect) {
-                    this.setData(j, i, shape.centerX, shape.centerY, shape.halfWidth, shape.halfHeight);
+                    this.dataTexture.set(j, i, shape.centerX, shape.centerY, shape.halfWidth, shape.halfHeight);
                 }
             }
 
-            this.setData(j, group.length, -1, -1, -999, -1);
+            this.dataTexture.set(j, group.length, -1, -1, -999, -1);
         }
 
-        this.drawData();
+        // this.drawData();
+
+        this.dataTexture.drawToGPU();
     }
 
     onResize(sceneWidth, sceneHeight, canvasWidth, canvasHeight) {
