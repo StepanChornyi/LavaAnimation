@@ -145,6 +145,8 @@ export default class Scene extends DisplayObject {
         canvas.width = Math.ceil(this.cachedWidth * scale);
         canvas.height = Math.ceil(this.cachedHeight * scale);
 
+        console.log(canvas.width,  canvas.height);
+
         gl.viewport(0, 0, canvas.width, canvas.height);
 
         this.lava.onResize(this.cachedWidth, this.cachedHeight, canvas.width, canvas.height);

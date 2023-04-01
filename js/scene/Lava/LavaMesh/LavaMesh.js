@@ -1,7 +1,7 @@
 import WEBGL_UTILS from '../../../WebGL/WebglUtils';
 import RectMesh from '../../../RectMesh/RectMesh';
 
-import { BLEND_DIST_FACTOR, DATA_TEXTURE_SIZE_IVS, INT_OFFSET, INT_SCALE_IVS, MAX_OBJECTS_COUNT } from './../lavaConfig';
+import { BLEND_DIST_FACTOR, DATA_TEXTURE_SIZE_IVS, MAX_OBJECTS_COUNT } from './../lavaConfig';
 
 import vs from "./lava.vs.glsl";
 import fsRaw from "./lava.fs.glsl";
@@ -11,9 +11,7 @@ const baseFs = replaceAllArr(fsRaw,
     ["MAX_OBJECTS_COUNT", MAX_OBJECTS_COUNT],
     ["DATA_TEXTURE_SIZE_IVS", DATA_TEXTURE_SIZE_IVS],
     ["BLEND_DIST_FACTOR", BLEND_DIST_FACTOR.toFixed(1)],
-    ["INT_SCALE_IVS", INT_SCALE_IVS.toFixed(8)],
-    ["INT_OFFSET", INT_OFFSET.toFixed(1)],
-    ["MIN_RADIUS", -(INT_OFFSET - 1)]
+    ["MIN_RADIUS", -100]
 );
 
 const finalMaskedFs = replaceAllArr(baseFs,
@@ -78,6 +76,8 @@ export default class LavaMesh extends RectMesh {
         this.finalMaskedConfig = this.getCurrentConfig();
 
         this.maskEdgeOffset = -1;
+        this.maskTexture = null;
+        this.dataTexture = null;
 
         this.colors = [0xff0000, 0xffff00, 0xff00ff, 0x0000ff];
     }
@@ -101,6 +101,14 @@ export default class LavaMesh extends RectMesh {
 
         const { gl, uniforms } = this;
 
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.dataTexture);
+
+        if (this.maskTexture) {
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, this.maskTexture);
+        }
+
         gl.uniform1i(uniforms[shapesDataUnf].location, 0);
         gl.uniform1i(uniforms[maskTextureUnf].location, 1);
         gl.uniform1f(uniforms[maskEdgeOffsetUnf].location, this.maskEdgeOffset);
@@ -123,7 +131,7 @@ export default class LavaMesh extends RectMesh {
         const boxes = this._getBoxes();
 
         for (let i = 0; i < boxes.length; i++) {
-            this._addRect(boxes[i], i * 2);
+            this._addRect(boxes[i], i);
         }
 
         this.drawBuffersData();
@@ -155,7 +163,7 @@ export default class LavaMesh extends RectMesh {
         return boxes;
     }
 
-    _addRect(rect, i) {
+    _addRect(rect, dataX) {
         const [c0, c1, c2, c3] = this.colors;
 
         const offset = this.vertices.length / this.vertexByteSize;
@@ -167,10 +175,10 @@ export default class LavaMesh extends RectMesh {
         const vb = 1 - rect.bottom / this.height;
 
         this.vertices.push(
-            rect.x, rect.y, c0, i, ul, vt,
-            rect.right, rect.y, c1, i, ur, vt,
-            rect.right, rect.bottom, c2, i, ur, vb,
-            rect.x, rect.bottom, c3, i, ul, vb
+            rect.x, rect.y, c0, dataX, ul, vt,
+            rect.right, rect.y, c1, dataX, ur, vt,
+            rect.right, rect.bottom, c2, dataX, ur, vb,
+            rect.x, rect.bottom, c3, dataX, ul, vb
         );
 
         for (let i = 0; i < RECT_INDICES.length; i++) {

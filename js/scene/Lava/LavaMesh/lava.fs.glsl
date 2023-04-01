@@ -6,7 +6,7 @@ varying vec2 uv;
 varying float dataX;
 
 uniform float maskEdgeOffset;
-uniform sampler2D shapesData;
+uniform sampler2D dataTexture;
 uniform sampler2D maskTexture;
 
 //external constants will be replaced before compilation
@@ -31,27 +31,7 @@ float distToRect(vec4 rect, vec2 p) {
 }
 
 vec4 getTextel(vec2 pos) {
-    return texture2D(shapesData, (pos + vec2(0.5, 0.5)) * DATA_TEXTURE_SIZE_IVS);//DATA_TEXTURE_SIZE_IVS - external
-}
-
-float int2bytesToFloat(vec2 int2bytes) {
-    return dot(int2bytes.xy, vec2(255.0, 65025.0)) * INT_SCALE_IVS - INT_OFFSET;//INT_SCALE_IVS, INT_OFFSET - external
-}
-
-vec4 getShape(float xX, float yY) {
-    vec4 t1 = getTextel(vec2(xX, yY));
-    vec4 t2 = getTextel(vec2(xX + 1.0, yY));
-
-    float x = int2bytesToFloat(t1.xy);
-    float y = int2bytesToFloat(t1.zw);
-    float w = int2bytesToFloat(t2.xy);
-    float h = int2bytesToFloat(t2.zw);
-
-    return vec4(x, y, w, h);
-}
-
-int getShapesCount() {
-    return int(getTextel(vec2(dataX, 0.0)).x * 255.0);
+    return texture2D(dataTexture, (pos + 0.5) * DATA_TEXTURE_SIZE_IVS);//DATA_TEXTURE_SIZE_IVS - external
 }
 
 float quadraticOutEase(float k) {
@@ -64,10 +44,9 @@ float getDistanceToLava() {
     int maxIndex = -1;
 
     for(int i = 0; i < maxCount; i++) {
-        vec4 shape = getShape(dataX, float(i));
+        vec4 shape = getTextel(vec2(dataX, float(i)));
 
         if(int(shape.z) < MIN_RADIUS) {
-            circlesCount = i;
             break;
         }
 
@@ -76,6 +55,8 @@ float getDistanceToLava() {
         } else {
             distances[i] = distToRect(shape, fragPos);
         }
+
+        circlesCount = i + 1;
 
         if(distances[i] <= -10.0) {
             return distances[i];

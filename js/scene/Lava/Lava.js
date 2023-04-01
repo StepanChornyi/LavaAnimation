@@ -3,7 +3,6 @@ import { Component, DisplayObject, Black, Vector, Rectangle, Matrix, MathEx, Col
 import Rect from '../../Math/Shapes/Rect';
 import Circle from '../../Math/Shapes/Circle';
 
-import BitmapData from './BitmapData';
 import { BLEND_DIST_FACTOR, DATA_TEXTURE_SIZE } from './lavaConfig';
 
 import LavaMesh from './LavaMesh/LavaMesh';
@@ -18,8 +17,6 @@ export default class Lava {
         this.gl = gl;
 
         this.lavaMesh = new LavaMesh(gl);
-
-        this.bitmapData = new BitmapData(gl, DATA_TEXTURE_SIZE).initImageData();
 
         this.shapesController = new ShapesController(1);
 
@@ -43,23 +40,9 @@ export default class Lava {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-        const width = DATA_TEXTURE_SIZE;
-        const height = DATA_TEXTURE_SIZE;
+        this.lavaMesh.dataTexture = texture;
 
-        const data = this.data = new Float32Array(width * height * 4);
-
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const index = (y * width + x) * 4;
-
-                const xx = (x % 2)
-                const yy = (y % 2)
-
-                this.setData(x, y, (xx || yy)?1:0, 0, 0, 1);
-            }
-        }
-
-        this.drawData();
+        this.data = new Float32Array(DATA_TEXTURE_SIZE * DATA_TEXTURE_SIZE * 4);
     }
 
     drawData() {
@@ -83,9 +66,6 @@ export default class Lava {
 
     updateShapesData() {
         this.shapesController.onUpdate();
-
-        if (TEXTURE_DEBUG)
-            this.bitmapData.clear();
 
         const shapes = this.shapesController.shapes;
 
@@ -130,31 +110,21 @@ export default class Lava {
                 this.debugger.shapes = group
             }
 
-            // this.bitmapData.setCount(group.length, j * 2, 0);
-
             for (let i = 0; i < group.length; i++) {
                 const shape = group[i];
 
                 if (shape.isCircle) {
-                    this.bitmapData.setCircle(shape, j * 2, i);
-
-                    this.setData(j, i, shape.x, shape.y, shape.radius, -1)
+                    this.setData(j, i, shape.x, shape.y, shape.radius, -1);
                 } else if (shape.isRect) {
-                    this.bitmapData.setRect(shape, j * 2, i);
-                    this.setData(j, i, shape.centerX, shape.centerY, shape.halfWidth, shape.halfHeight)
-
+                    this.setData(j, i, shape.centerX, shape.centerY, shape.halfWidth, shape.halfHeight);
                 }
             }
 
-            this.setData(j, group.length, -1, -1, -1, -1)
-
-            this.bitmapData.setEmpty(j * 2, group.length);
+            this.setData(j, group.length, -1, -1, -999, -1);
         }
 
         this.drawData();
-
-        this.bitmapData.updateAndBindTexture();
-    }   
+    }
 
     onResize(sceneWidth, sceneHeight, canvasWidth, canvasHeight) {
 
@@ -193,6 +163,7 @@ export default class Lava {
         gl.viewport(0, 0, mask.width, mask.height);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+
         lavaMesh.maskEdgeOffset = 10;
         lavaMesh.setConfig(lavaMesh.maskConfig);
         lavaMesh.render(viewMatrix3x3);
@@ -202,7 +173,6 @@ export default class Lava {
         gl.colorMask(true, true, true, true);
         gl.viewport(0, 0, this.canvasWidth, this.canvasHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
 
         {
             gl.activeTexture(gl.TEXTURE1);
@@ -216,8 +186,8 @@ export default class Lava {
 
 
         {
-            this.image.texture = this.texture;
-            this.image.render(viewMatrix3x3);
+            // this.image.texture = this.texture;
+            // this.image.render(viewMatrix3x3);
             // return;
         }
 
