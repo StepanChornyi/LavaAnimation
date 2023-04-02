@@ -65,7 +65,6 @@ export default class LavaMesh extends RectMesh {
         super(gl, maskProgram, { uniforms, attribs });
 
         this.maskConfig = this.getCurrentConfig();
-        console.log(uniforms);
 
         this.program = maskedMaskProgram;
         this.initUniformsAndAttribs({ uniforms, attribs });

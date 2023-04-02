@@ -196,14 +196,14 @@ export default class ShapesController {
             //     this._updateBubbleToMouse(bubble);
             // }
 
-            bubble.vy -= 0.3 / bubble.radius;
+            bubble.vy -= 0.1 /(0.5+ bubble.radius);
 
             bubble.vx *= 0.98;
             // bubble.vy *= 0.98;
 
             bubble.x += (bubble.desiredX - bubble.x) * 0.01;
             bubble.y += bubble.vy;
-            bubble.s = (bubble.y * 2) / this.height;
+            bubble.s = (bubble.y * 2) / this.height - 0.1;
 
             if (bubble.x < -bubble.radius * 2) {
                 bubble.x = this.width + bubble.radius * 1.5;
