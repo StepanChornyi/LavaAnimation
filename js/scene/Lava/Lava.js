@@ -21,7 +21,8 @@ export default class Lava {
 
         this.shapesController = new ShapesController(1);
 
-        this.mask = new RenderTexture(gl);
+        this.maskSmall = new RenderTexture(gl);
+        this.maskLarge = new RenderTexture(gl);
 
         this.image = new FullScreenImage(gl);
 
@@ -111,9 +112,11 @@ export default class Lava {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
 
-        const MASK_SCALE = 0.1;
+        const MASK_SMALL_SCALE = 0.05;
+        const MASK_LARGE_SCALE = 0.3;
 
-        this.mask.setSize(Math.round(canvasWidth * MASK_SCALE), Math.round(canvasHeight * MASK_SCALE));
+        this.maskSmall.setSize(Math.round(canvasWidth * MASK_SMALL_SCALE), Math.round(canvasHeight * MASK_SMALL_SCALE));
+        this.maskLarge.setSize(Math.round(canvasWidth * MASK_LARGE_SCALE), Math.round(canvasHeight * MASK_LARGE_SCALE));
 
         this.transformIvs.copyFrom(this.transform).invert();
 
@@ -129,13 +132,21 @@ export default class Lava {
 
         const gl = this.gl;
         const lavaMesh = this.lavaMesh;
-        const mask = this.mask;
+        const maskSmall = this.maskSmall;
+        const maskLarge = this.maskLarge;
 
-        mask.bindFramebuffer(true);
+        maskSmall.bindFramebuffer(true);
 
-        lavaMesh.maskEdgeOffset = 7;
+        lavaMesh.maskEdgeOffset = 15;
         lavaMesh.maskTexture = null;
         lavaMesh.setConfig(lavaMesh.maskConfig);
+        lavaMesh.render(viewMatrix3x3);
+
+        maskLarge.bindFramebuffer(true);
+
+        lavaMesh.maskEdgeOffset = 2;
+        lavaMesh.maskTexture = maskSmall.texture;
+        lavaMesh.setConfig(lavaMesh.maskedMaskConfig);
         lavaMesh.render(viewMatrix3x3);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -145,7 +156,11 @@ export default class Lava {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         {
-            lavaMesh.maskTexture = mask.texture;
+            // gl.activeTexture(gl.TEXTURE1);
+            // gl.bindTexture(gl.TEXTURE_2D, maskSmall.texture);
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+        lavaMesh.maskTexture = maskLarge.texture;
             lavaMesh.setConfig(lavaMesh.finalMaskedConfig);
             // lavaMesh.setConfig(lavaMesh.maskConfig);
             lavaMesh.render(viewMatrix3x3);
@@ -153,7 +168,7 @@ export default class Lava {
 
 
         {
-            // this.image.texture =  mask.texture;
+            // this.image.texture =  maskLarge.texture;
             // this.image.texture = this.dataTexture.texture;
             // this.image.render(viewMatrix3x3);
 
