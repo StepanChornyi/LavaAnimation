@@ -151,7 +151,7 @@ export default class ShapesController {
 
             g.x = ((this.width / 6) * (i + Math.random() * 0.5)) * 0.5;
             g.y = this.ground.top - 100;
-            g.r = (50 + 90 * Math.random()) * 0.5;
+            g.r = (90 + 90 * Math.random()) * 0.5;
 
             // this._animateGround(g);
         }
@@ -164,13 +164,13 @@ export default class ShapesController {
 
             bubble.desiredX = bubble.x;
 
-            bubble.r = 30 + 30 * Math.random();
+            bubble.r = 60 + 30 * Math.random();
+            bubble.defaultRadius = bubble.r;
         }
     }
 
     onUpdate() {
 
-        // return;
         for (let i = 0; i < this.groundCircles.length; i++) {
             const groundCircle = this.groundCircles[i];
             const { d, sX } = groundCircle;
@@ -196,14 +196,14 @@ export default class ShapesController {
             //     this._updateBubbleToMouse(bubble);
             // }
 
-            bubble.vy -= 0.1 /(0.5+ bubble.radius);
+            bubble.vy -= 0.01;
 
             bubble.vx *= 0.98;
             // bubble.vy *= 0.98;
 
             bubble.x += (bubble.desiredX - bubble.x) * 0.01;
             bubble.y += bubble.vy;
-            bubble.s = (bubble.y * 2) / this.height - 0.1;
+            bubble.r += -0.1;
 
             if (bubble.x < -bubble.radius * 2) {
                 bubble.x = this.width + bubble.radius * 1.5;
@@ -213,13 +213,12 @@ export default class ShapesController {
             if (bubble.x > this.width + bubble.radius * 2) {
                 bubble.x = -bubble.radius * 1.5;
                 bubble.desiredX = bubble.x;
-
             }
 
-            if (bubble.y < -bubble.radius * 2 || bubble.s <= 0.0001) {
+            if (bubble.y < -bubble.radius * 2 || bubble.r <= -10) {
                 bubble.x = this.width * Math.random();
-                bubble.y = this.height + bubble.radius * 2 + 100;
-                bubble.s = 1;
+                bubble.y = this.height + bubble.defaultRadius * 2 + 100;
+                bubble.r = bubble.defaultRadius;
                 bubble.vy = 0;
                 bubble.desiredX = bubble.x;
 

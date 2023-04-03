@@ -3,7 +3,7 @@ import { Component, DisplayObject, Black, Vector, Rectangle, Matrix, MathEx, Col
 import Rect from '../../Math/Shapes/Rect';
 import Circle from '../../Math/Shapes/Circle';
 
-import { BLEND_DIST_FACTOR, DATA_TEXTURE_SIZE } from './lavaConfig';
+import { BLEND_DIST_FACTOR, DATA_TEXTURE_SIZE, MIN_RADIUS } from './lavaConfig';
 
 import LavaMesh from './LavaMesh/LavaMesh';
 import ShapesController from './ShapesController';
@@ -35,7 +35,7 @@ export default class Lava {
 
         this.dataTexture = new DataTexture(gl, DATA_TEXTURE_SIZE);
 
-        this.lavaMesh.dataTexture =  this.dataTexture.texture;
+        this.lavaMesh.dataTexture = this.dataTexture.texture;
     }
 
     updateShapesData() {
@@ -47,36 +47,36 @@ export default class Lava {
 
         const boxes = this.lavaMesh._getBoxes();
 
+        this.dataTexture.clear(MIN_RADIUS);
+
+        const clipDist = BLEND_DIST_FACTOR * 1.5;
+
         for (let j = 0; j < boxes.length; j++) {
             const box = boxes[j];
             const group = [];
 
-            for (let i = 0; i < shapes.length; i++) {
+            for (let i = 0, distX, distY, x, y, radiusX, radiusY; i < shapes.length; i++) {
                 const shape = shapes[i];
 
                 group.push(shape);
                 continue;
 
                 if (shape.isCircle) {
-                    const distX = Math.abs(box.centerX - shape.x);
-                    const distY = Math.abs(box.centerY - shape.y);
-
-                    const clipDistX = shape.radius + BLEND_DIST_FACTOR * 8;
-                    const clipDistY = shape.radius + BLEND_DIST_FACTOR * 8;
-
-                    if (distX < clipDistX && distY < clipDistY) {
-                        group.push(shape);
-                    }
+                    x = shape.x;
+                    y = shape.y;
+                    radiusX = radiusY = shape.radius;
                 } else if (shape.isRect) {
-                    const distX = Math.abs(box.centerX - shape.centerX);
-                    const distY = Math.abs(box.centerY - shape.centerY);
+                    x = shape.centerX;
+                    y = shape.centerY;
+                    radiusX = shape.halfWidth;
+                    radiusY = shape.halfHeight;
+                }
 
-                    const clipDistX = box.halfWidth + shape.halfWidth + BLEND_DIST_FACTOR * 2;
-                    const clipDistY = box.halfHeight + shape.halfHeight + BLEND_DIST_FACTOR * 2;
+                distX = Math.abs(box.centerX - x) - radiusX - box.halfWidth;
+                distY = Math.abs(box.centerY - y) - radiusY - box.halfHeight;
 
-                    if (distX < clipDistX && distY < clipDistY) {
-                        group.push(shape);
-                    }
+                if (distX < clipDist && distY < clipDist) {
+                    group.push(shape);
                 }
             }
 
@@ -94,7 +94,7 @@ export default class Lava {
                 }
             }
 
-            this.dataTexture.set(j, group.length, -1, -1, -999, -1);
+            this.dataTexture.set(j, group.length, -1, -1, MIN_RADIUS - 1, -1);
         }
 
         // this.drawData();
@@ -131,16 +131,10 @@ export default class Lava {
         const lavaMesh = this.lavaMesh;
         const mask = this.mask;
 
-        mask.bindFramebuffer();
+        mask.bindFramebuffer(true);
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, mask.frameBuffer);
-        gl.clearColor(0, 0, 0, 0);
-        gl.colorMask(true, true, true, true);
-        gl.viewport(0, 0, mask.width, mask.height);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-
-        lavaMesh.maskEdgeOffset = 10;
+        lavaMesh.maskEdgeOffset = 7;
+        lavaMesh.maskTexture = null;
         lavaMesh.setConfig(lavaMesh.maskConfig);
         lavaMesh.render(viewMatrix3x3);
 
@@ -151,10 +145,7 @@ export default class Lava {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         {
-            gl.activeTexture(gl.TEXTURE1);
-            gl.bindTexture(gl.TEXTURE_2D, mask.texture);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
+            lavaMesh.maskTexture = mask.texture;
             lavaMesh.setConfig(lavaMesh.finalMaskedConfig);
             // lavaMesh.setConfig(lavaMesh.maskConfig);
             lavaMesh.render(viewMatrix3x3);
@@ -162,8 +153,10 @@ export default class Lava {
 
 
         {
-            // this.image.texture = this.texture;
+            // this.image.texture =  mask.texture;
+            // this.image.texture = this.dataTexture.texture;
             // this.image.render(viewMatrix3x3);
+
             // return;
         }
 

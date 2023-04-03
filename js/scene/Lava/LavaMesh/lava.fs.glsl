@@ -40,7 +40,7 @@ float quadraticOutEase(float k) {
 
 float getDistanceToLava() {
     float distances[maxCount];
-    int circlesCount = -1;
+    int circlesCount = 0;
     int maxIndex = -1;
 
     for(int i = 0; i < maxCount; i++) {
@@ -56,14 +56,22 @@ float getDistanceToLava() {
             distances[i] = distToRect(shape, fragPos);
         }
 
+        if(distances[i] > blendDistFactor * 2.0) {
+            distances[i] = 99999.0;
+        }
+
         circlesCount = i + 1;
 
-        if(distances[i] <= -10.0) {
+        if(distances[i] <= -5.0) {
             return distances[i];
         }
     }
 
-    if(circlesCount < 2) {
+    if(circlesCount == 0) {
+        return 999.0;
+    }
+
+    if(circlesCount == 1) {
         return distances[0];
     }
 
@@ -180,7 +188,7 @@ void setFragColor(float lavaDist) {
     if(lavaDist < fadeDist) {
         float f = 1.0 - lavaDist / fadeDist;
 
-        gl_FragColor = vec4(mix(baseColor, vec3(0.0, 0.0, 1.0), 1.0-f), f);
+        gl_FragColor = vec4(mix(baseColor, vec3(0.0, 0.0, 1.0), 1.0 - f), f);
         // gl_FragColor = vec4(f, 1.0, 0.0, 1.0);
         return;
     }

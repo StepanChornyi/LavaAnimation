@@ -1,7 +1,7 @@
 import WEBGL_UTILS from '../../../WebGL/WebglUtils';
 import RectMesh from '../../../RectMesh/RectMesh';
 
-import { BLEND_DIST_FACTOR, DATA_TEXTURE_SIZE_IVS, MAX_OBJECTS_COUNT } from './../lavaConfig';
+import { BLEND_DIST_FACTOR, DATA_TEXTURE_SIZE_IVS, MAX_OBJECTS_COUNT, MIN_RADIUS } from './../lavaConfig';
 
 import vs from "./lava.vs.glsl";
 import fsRaw from "./lava.fs.glsl";
@@ -11,7 +11,7 @@ const baseFs = replaceAllArr(fsRaw,
     ["MAX_OBJECTS_COUNT", MAX_OBJECTS_COUNT],
     ["DATA_TEXTURE_SIZE_IVS", DATA_TEXTURE_SIZE_IVS],
     ["BLEND_DIST_FACTOR", BLEND_DIST_FACTOR.toFixed(1)],
-    ["MIN_RADIUS", -100]
+    ["MIN_RADIUS", MIN_RADIUS]
 );
 
 const finalMaskedFs = replaceAllArr(baseFs,
@@ -106,6 +106,7 @@ export default class LavaMesh extends RectMesh {
         if (this.maskTexture) {
             gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, this.maskTexture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         }
 
         gl.uniform1i(uniforms[shapesDataUnf].location, 0);
