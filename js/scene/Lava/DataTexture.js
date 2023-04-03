@@ -24,9 +24,9 @@ export default class DataTexture {
         this.data[index + 3] = a;
     }
 
-    clear() {
+    clear(clearVal = -1) {
         for (let i = 0; i < this.data.length; i++) {
-            this.data[i] = 0;
+            this.data[i] = clearVal;
         }
     }
 

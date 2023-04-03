@@ -20,7 +20,7 @@ export default class LavaDebugger {
 
         // if (TEXTURE_DEBUG) {
         this.canvas.style.position = "absolute";
-        this.canvas.style.opacity = "0.5";
+        this.canvas.style.opacity = "1";
         this.canvas.style.width = "100%";
         this.canvas.style.height = "100%";
         document.body.appendChild(this.canvas);
@@ -54,7 +54,7 @@ export default class LavaDebugger {
         for (let i = 0; i < shapes.length; i++) {
             const shape = shapes[i];
     
-            ctx.fillStyle = ColorHelper.intToRGBA(0x00ff00, 1)
+            ctx.fillStyle = ColorHelper.intToRGBA(0x00ff00, 0.5)
             ctx.beginPath();
     
             if (shape.isCircle) {
@@ -69,7 +69,7 @@ export default class LavaDebugger {
             ctx.closePath();
             ctx.fill();
     
-            ctx.fillStyle = ColorHelper.intToRGBA(0x0000ff, 0.3)
+            ctx.fillStyle = ColorHelper.intToRGBA(0xffff00, 0.1)
             ctx.beginPath();
     
             if (shape.isCircle) {
@@ -95,8 +95,8 @@ export default class LavaDebugger {
         for (let i = 0; i < boxes.length; i++) {
             const { x, y, width, height } = boxes[i];
     
-            ctx.strokeStyle = ColorHelper.intToRGBA(0xffffff, 1)
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = ColorHelper.intToRGBA(0xffffff, 0.1)
+            ctx.lineWidth = 1;
             ctx.beginPath();
     
             ctx.rect(x, y, width, height);
