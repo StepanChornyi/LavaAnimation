@@ -33,7 +33,7 @@ export default class Lava {
         this.transform = this.lavaMesh.transform;
         this.transformIvs = this.transform.clone().invert();
 
-        this.dataTexture = new DataTexture(gl, DATA_TEXTURE_SIZE);
+        this.dataTexture = new DataTexture(gl);
 
         this.lavaMesh.dataTexture = this.dataTexture.texture;
     }
@@ -45,9 +45,14 @@ export default class Lava {
 
         this.debugger && (this.debugger.shapes = shapes);
 
-        this.dataTexture.clear(MIN_RADIUS);
-
         const boxesCount = this.lavaMesh._getBoxes().length;
+
+
+        if (!this.dataTexture.matchSize(boxesCount, DATA_TEXTURE_SIZE)) {
+            this.dataTexture.resize(boxesCount, DATA_TEXTURE_SIZE);
+        }
+
+        this.dataTexture.clear(MIN_RADIUS);
 
         for (let j = 0; j < boxesCount; j++) {
             for (let i = 0; i < shapes.length; i++) {

@@ -1,8 +1,11 @@
 export default class DataTexture {
-    constructor(gl, width, height = width) {
+    constructor(gl, width = 0, height = width) {
         this.gl = gl;
-        this.width = width;
-        this.height = height;
+        this.width = 0;
+        this.height = 0;
+        this.data = null;
+
+        this.resize(width, height);
 
         const texture = this.texture = gl.createTexture();
 
@@ -11,8 +14,19 @@ export default class DataTexture {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    }
+
+    resize(width, height) {
+        delete this.data;
+
+        this.width = width;
+        this.height = height;
 
         this.data = new Float32Array(width * height * 4);
+    }
+
+    matchSize(width, height) {
+        return this.width === width && this.height === height;
     }
 
     set(x, y, r, g, b, a) {
