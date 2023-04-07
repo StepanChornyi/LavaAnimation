@@ -3,7 +3,7 @@ import { Component, DisplayObject, Black, Vector, Rectangle, Matrix, MathEx, Col
 import Rect from '../../Math/Shapes/Rect';
 import Circle from '../../Math/Shapes/Circle';
 
-import { BLEND_DIST_FACTOR, DATA_TEXTURE_SIZE, MIN_RADIUS } from './lavaConfig';
+import { BLEND_DIST_FACTOR, DATA_TEXTURE_SIZE, MASK_EDGE_OFFSET, MASK_SCALE, MIN_RADIUS } from './lavaConfig';
 
 import LavaMesh from './LavaMesh/LavaMesh';
 import ShapesController from './ShapesController';
@@ -45,47 +45,13 @@ export default class Lava {
 
         this.debugger && (this.debugger.shapes = shapes);
 
-        const boxes = this.lavaMesh._getBoxes();
-
         this.dataTexture.clear(MIN_RADIUS);
 
-        const clipDist = BLEND_DIST_FACTOR * 1.5;
+        const boxesCount = this.lavaMesh._getBoxes().length;
 
-        for (let j = 0; j < boxes.length; j++) {
-            const box = boxes[j];
-            const group = [];
-
-            for (let i = 0, distX, distY, x, y, radiusX, radiusY; i < shapes.length; i++) {
+        for (let j = 0; j < boxesCount; j++) {
+            for (let i = 0; i < shapes.length; i++) {
                 const shape = shapes[i];
-
-                group.push(shape);
-                continue;
-
-                if (shape.isCircle) {
-                    x = shape.x;
-                    y = shape.y;
-                    radiusX = radiusY = shape.radius;
-                } else if (shape.isRect) {
-                    x = shape.centerX;
-                    y = shape.centerY;
-                    radiusX = shape.halfWidth;
-                    radiusY = shape.halfHeight;
-                }
-
-                distX = Math.abs(box.centerX - x) - radiusX - box.halfWidth;
-                distY = Math.abs(box.centerY - y) - radiusY - box.halfHeight;
-
-                if (distX < clipDist && distY < clipDist) {
-                    group.push(shape);
-                }
-            }
-
-            if (this.debugger && this.shapesController.activeBoxIndex === j) {
-                this.debugger.shapes = group
-            }
-
-            for (let i = 0; i < group.length; i++) {
-                const shape = group[i];
 
                 if (shape.isCircle) {
                     this.dataTexture.set(j, i, shape.x, shape.y, shape.radius, -1);
@@ -94,10 +60,8 @@ export default class Lava {
                 }
             }
 
-            this.dataTexture.set(j, group.length, -1, -1, MIN_RADIUS - 1, -1);
+            this.dataTexture.set(j, shapes.length, -1, -1, MIN_RADIUS - 1, -1);
         }
-
-        // this.drawData();
 
         this.dataTexture.drawToGPU();
     }
@@ -106,12 +70,8 @@ export default class Lava {
 
         this.lavaMesh.setSize(sceneWidth, sceneHeight);
 
-        this.shapesController.mirrored = this.mirrored;
-
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
-
-        const MASK_SCALE = 0.1;
 
         this.mask.setSize(Math.round(canvasWidth * MASK_SCALE), Math.round(canvasHeight * MASK_SCALE));
 
@@ -133,7 +93,7 @@ export default class Lava {
 
         mask.bindFramebuffer(true);
 
-        lavaMesh.maskEdgeOffset = 7;
+        lavaMesh.maskEdgeOffset = MASK_EDGE_OFFSET;
         lavaMesh.maskTexture = null;
         lavaMesh.setConfig(lavaMesh.maskConfig);
         lavaMesh.render(viewMatrix3x3);
@@ -144,23 +104,13 @@ export default class Lava {
         gl.viewport(0, 0, this.canvasWidth, this.canvasHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        {
-            // gl.activeTexture(gl.TEXTURE1);
-            // gl.bindTexture(gl.TEXTURE_2D, maskSmall.texture);
-            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-            lavaMesh.maskTexture = mask.texture;
-            lavaMesh.setConfig(lavaMesh.finalMaskedConfig);
-            // lavaMesh.setConfig(lavaMesh.maskConfig);
-            lavaMesh.render(viewMatrix3x3);
-        }
-
+        lavaMesh.maskTexture = mask.texture;
+        lavaMesh.setConfig(lavaMesh.finalMaskedConfig);
+        lavaMesh.render(viewMatrix3x3);
 
         {
             // this.image.texture =  mask.texture;
-            // this.image.texture = this.dataTexture.texture;
             // this.image.render(viewMatrix3x3);
-
             // return;
         }
 

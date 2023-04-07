@@ -48,11 +48,11 @@ export default class Scene extends DisplayObject {
 
         // const dt = (- this.lastUpdateTime + (this.lastUpdateTime = performance.now())) * 0.06;//*0.06 same as 1/16.666666
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.clearColor(0, 0, 0, 0);
-        gl.colorMask(true, true, true, true);
-        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        // gl.clearColor(0, 0, 0, 0);
+        // gl.colorMask(true, true, true, true);
+        // gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 
         this.lava.render(this.viewMatrix);
