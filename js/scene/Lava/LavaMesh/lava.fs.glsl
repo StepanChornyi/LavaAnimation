@@ -30,6 +30,16 @@ float distToRect(vec4 rect, vec2 p) {
     return length(max(o, 0.0)) + max(min(o.x, 0.0), min(o.y, 0.0));
 }
 
+float distToSinusoide(vec4 sinusoide, vec2 p) {
+    vec2 o = abs(p - sinusoide.xy) - sinusoide.zw;
+
+    float dist = length(max(o, 0.0)) + max(min(o.x, 0.0), min(o.y, 0.0));
+
+    float sinDist = distance(p, vec2(p.x, sinusoide.y + sin((fragPos.x - sinusoide.x) * 0.01 * mod(sinusoide.z, 10.0)) * sinusoide.w)) - 80.0;
+
+    return sinDist;
+}
+
 vec4 getTextel(vec2 pos) {
     return texture2D(dataTexture, (pos + 0.5) * DATA_TEXTURE_SIZE_IVS);//DATA_TEXTURE_SIZE_IVS - external
 }
@@ -53,7 +63,7 @@ float getDistanceToLava() {
         if(int(shape.w) <= 0) {
             distances[i] = distToCircle(shape.xyz, fragPos);
         } else {
-            distances[i] = distToRect(shape, fragPos);
+            distances[i] = distToSinusoide(shape, fragPos);
         }
 
         if(distances[i] > blendDistFactor * 2.0) {
@@ -190,7 +200,6 @@ void setFragColor(float lavaDist) {
         gl_FragColor = vec4(baseColor, 1.0);
         return;
     }
-
 
     if(lavaDist < fadeDist) {
         float f = 1.0 - lavaDist / fadeDist;

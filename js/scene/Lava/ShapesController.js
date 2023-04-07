@@ -18,6 +18,8 @@ export default class ShapesController {
         this.width = this.height = 1;
 
         this.ground = new RectBody();
+        this.ground2 = new RectBody();
+        this.ground3 = new RectBody();
         this.groundCircles = [];
         this.bubbles = [];
 
@@ -38,7 +40,9 @@ export default class ShapesController {
 
         this.shapes = [
             this.ground,
-            ...this.groundCircles,
+            this.ground2,
+            this.ground3,
+            // ...this.groundCircles,
             ...this.bubbles
         ];
 
@@ -141,17 +145,40 @@ export default class ShapesController {
         this.width = width;
         this.height = height;
 
-        this.ground.width = width;
+        this.ground.width = Math.ceil(width / 10) * 10 + 2;
         this.ground.height = height * 0.1 * this.ss;
         this.ground.centerX = width * 0.5;
         this.ground.centerY = height;
 
+
+
+        this.ground2.copyFrom(this.ground);
+
+
+        this.ground2.width = Math.ceil(width / 10) * 10 + 1;
+
+        this.ground3.copyFrom(this.ground);
+
+        this.ground3.width = Math.ceil(width / 10) * 10 + 0.5;
+
+
+        const offset = 50;
+        const step = (this.width + offset * 2) / this.groundCircles.length;
+
         for (let i = 0; i < this.groundCircles.length; i++) {
             const g = this.groundCircles[i];
 
-            g.x = ((this.width / 6) * (i + Math.random() * 0.5)) * 0.5;
+            g.x = -offset + step * (i + 0.5);
             g.y = this.ground.top - 100;
-            g.r = (90 + 90 * Math.random()) * 0.5;
+            g.r = 10 + 10 * Math.random();
+
+            g.desiredY = g.y;
+            g.desiredX = g.x;
+            g.timeShift = Math.random() * Math.PI * 2;
+            g.timeScale = rndBtw(0.1, 1) * rndSign();
+            g.moveAmountX = rndBtw(35, 80);
+            g.moveAmountY = rndBtw(10, 35);
+
 
             // this._animateGround(g);
         }
@@ -160,28 +187,38 @@ export default class ShapesController {
             const bubble = this.bubbles[i];
 
             bubble.x = this.width * Math.random();
-            bubble.y = this.height * Math.random();
+            bubble.y = this.height * Math.random() * 2;
 
             bubble.desiredX = bubble.x;
 
-            bubble.r = 60 + 30 * Math.random();
+            bubble.r = 80 + 60 * Math.random();
             bubble.defaultRadius = bubble.r;
         }
+
+        this.t = 0;
     }
 
     onUpdate() {
+        this.t += 0.01666666;
+
+        this.ground.x += 1
+        this.ground2.x -= 0.5;
 
         for (let i = 0; i < this.groundCircles.length; i++) {
-            const groundCircle = this.groundCircles[i];
-            const { d, sX } = groundCircle;
+            const g = this.groundCircles[i];
 
-            groundCircle.x += sX * d;
+            const sin = Math.sin((this.t + g.timeShift) * g.timeScale);
+            const cos = Math.cos((this.t + g.timeShift) * g.timeScale);
 
-            if (d < 0 && groundCircle.x < -groundCircle.r * 2) {
-                groundCircle.x = this.width + groundCircle.r * 2;
-            } else if (d > 0 && groundCircle.x > this.width + groundCircle.r * 2) {
-                groundCircle.x = -groundCircle.r * 2;
-            }
+            g.x = g.desiredX + sin * g.moveAmountX;
+            g.y = g.desiredY + cos * g.moveAmountY;
+            g.s = 1 + sin * cos * 0.5;
+
+            // if (d < 0 && groundCircle.x < -groundCircle.r * 2) {
+            //     groundCircle.x = this.width + groundCircle.r * 2;
+            // } else if (d > 0 && groundCircle.x > this.width + groundCircle.r * 2) {
+            //     groundCircle.x = -groundCircle.r * 2;
+            // }
         }
 
         ///////////////////////
@@ -305,6 +342,14 @@ class RectBody extends Rect {
         }
 
         return false;
+    }
+
+    copyFrom(rect) {
+        this.x = rect.x;
+        this.y = rect.y;
+
+        this.width = rect.width;
+        this.height = rect.height;
     }
 }
 
