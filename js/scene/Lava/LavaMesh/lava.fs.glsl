@@ -167,6 +167,13 @@ float getDistanceToLava() {
 }
 
 void setFragColor(float lavaDist) {
+    float fadeDist = 2.0;
+
+    if(lavaDist >= fadeDist) {
+        discard;
+        return;
+    }
+
     float glowSize = 1.5;
     float colorHeightMix = (uv.y + 1.0) * 0.5;
 
@@ -176,14 +183,14 @@ void setFragColor(float lavaDist) {
     // vec3 col1 = vec3(0.980, 0.0294, 0.0928);
     // vec3 col2 = vec3(0.89, 0.2, 0.27);
 
-    vec3 baseColor = vec3(0.91, 0.11, 0.38);
+    // vec3 baseColor = vec3(0.91, 0.11, 0.38);
+    vec3 baseColor = fragColor;
 
     if(lavaDist < 0.0) {
         gl_FragColor = vec4(baseColor, 1.0);
         return;
     }
 
-    float fadeDist = 2.0;
 
     if(lavaDist < fadeDist) {
         float f = 1.0 - lavaDist / fadeDist;

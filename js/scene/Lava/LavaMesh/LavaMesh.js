@@ -36,25 +36,16 @@ const maskEdgeOffsetUnf = "maskEdgeOffset";
 const uniforms = [shapesDataUnf, maskTextureUnf, maskEdgeOffsetUnf];
 
 const attribs = [
-    {
-        name: 'vertPosition',
-        size: 2
-    },
-    {
-        name: 'vertColor',
-        size: 1
-    },
-    {
-        name: 'vertDataX',
-        size: 1
-    },
-    {
-        name: 'vertUv',
-        size: 2
-    }
+    { name: 'vertPosition', size: 2 },
+    { name: 'vertColor', size: 1 },
+    { name: 'vertDataX', size: 1 },
+    { name: 'vertUv', size: 2 }
 ];
 
-
+const colorSideTop = 0xe81e2f;
+const colorCenterTop = 0xff0055;
+const colorSideBot = 0x0249bd;
+const colorCenterBot = 0x8717d1;
 
 export default class LavaMesh extends RectMesh {
     constructor(gl) {
@@ -77,8 +68,6 @@ export default class LavaMesh extends RectMesh {
         this.maskEdgeOffset = -1;
         this.maskTexture = null;
         this.dataTexture = null;
-
-        this.colors = [0xff0000, 0xffff00, 0xff00ff, 0x0000ff];
     }
 
     setConfig({ program, attribs, uniforms }) {
@@ -114,13 +103,6 @@ export default class LavaMesh extends RectMesh {
         gl.uniform1f(uniforms[maskEdgeOffsetUnf].location, this.maskEdgeOffset);
     }
 
-    setColors(topLeft, topRight = topLeft, bottomRight = topRight, bottomLeft = bottomRight) {
-        // this.colors = [topLeft, topRight, bottomRight, bottomLeft];
-        this.dirty = true;
-
-        return this;
-    }
-
     _updateBuffers() {
         if (!this.dirty)
             return;
@@ -140,34 +122,22 @@ export default class LavaMesh extends RectMesh {
     }
 
     _getBoxes() {
-        const boxes = [];
-        const minCellSize = BLEND_DIST_FACTOR * 3;
-        const rows = Math.floor(this.height / minCellSize);
-        const cols = Math.floor(this.width / minCellSize);
+        const boxLeft = new Rect(0, 0, this.width * 0.5, this.height);
+        const boxRight = new Rect(this.width * 0.5, 0, this.width * 0.5, this.height);
 
-        const segmentWidth = Math.floor(this.width / cols);
-        const lastSegmentWidth = Math.floor(this.width - segmentWidth * (cols - 1));
+        boxLeft.colors = [colorSideTop, colorCenterTop, colorCenterBot, colorSideBot];
+        boxRight.colors = [colorCenterTop, colorSideTop, colorSideBot, colorCenterBot];
 
-        const segmentHeight = Math.floor(this.height / rows);
-        const lastSegmentHeight = Math.floor(this.height - segmentHeight * (rows - 1));
+        boxRight.flipped = true;
 
-        for (let yy = 0; yy < rows; yy++) {
-            for (let xx = 0; xx < cols; xx++) {
-                const w = (xx === cols - 1) ? lastSegmentWidth : segmentWidth;
-                const h = (yy === rows - 1) ? lastSegmentHeight : segmentHeight;
-
-                boxes.push(new Rect(xx * segmentWidth, yy * segmentHeight, w, h));
-            }
-        }
-
-        return boxes;
+        return [boxLeft, boxRight];
     }
 
     _addRect(rect, dataX) {
-        const [c0, c1, c2, c3] = this.colors;
+        const [c0, c1, c2, c3] = rect.colors;
 
         const offset = this.vertices.length / this.vertexByteSize;
-        const RECT_INDICES = RectMesh.RECT_INDICES;
+        const RECT_INDICES = rect.flipped ? RectMesh.RECT_INDICES_FLIPPED : RectMesh.RECT_INDICES;
 
         const ul = rect.x / this.width;
         const ur = rect.right / this.width;

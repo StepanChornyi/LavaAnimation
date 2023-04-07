@@ -24,6 +24,7 @@ const currentConfig = {
 };
 
 const RECT_INDICES = [0, 1, 2, 2, 3, 0];
+const RECT_INDICES_FLIPPED = [0, 1, 3, 1, 2, 3];
 
 export default class RectMesh extends Mesh2D {
     constructor(gl, program = WEBGL_UTILS.createProgram(gl, vs, fs), config = currentConfig) {
@@ -85,6 +86,10 @@ export default class RectMesh extends Mesh2D {
 
     static get RECT_INDICES() {
         return RECT_INDICES;
+    }
+
+    static get RECT_INDICES_FLIPPED() {
+        return RECT_INDICES_FLIPPED;
     }
 }
 
