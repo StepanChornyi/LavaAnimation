@@ -91,6 +91,9 @@ export default class Lava {
 
         lavaMesh.dataTexture = this.dataTexture;
 
+        lavaMesh.saveTransform();
+        lavaMesh.resetTransform();
+
         lavaMesh.maskEdgeOffset = MASK_EDGE_OFFSET;
         lavaMesh.maskTexture = null;
         lavaMesh.setConfig(lavaMesh.maskConfig);
@@ -102,6 +105,7 @@ export default class Lava {
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        lavaMesh.restoreTransform();
         lavaMesh.maskTexture = mask.texture;
         lavaMesh.setConfig(lavaMesh.finalMaskedConfig);
         lavaMesh.render(viewMatrix3x3);

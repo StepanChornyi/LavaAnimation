@@ -20,6 +20,7 @@ export default class Mesh2D extends Mesh {
         super(gl, program, config);
 
         this.transform = new Matrix();
+        this._savedTransform = new Matrix();
 
         this._transformDataArr = new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]);
     }
@@ -27,6 +28,19 @@ export default class Mesh2D extends Mesh {
     initUniformsAndAttribs(config) {
         super.initUniformsAndAttribs(Mesh.mergeConfigs(config, currentConfig));
     }
+
+    saveTransform() {
+        this._savedTransform.copyFrom(this.transform);
+    }
+
+    resetTransform() {
+        this.transform.identity();
+    }
+
+    restoreTransform() {
+        this.transform.copyFrom(this._savedTransform);
+    }
+
 
     _updateBuffers() { }
 
