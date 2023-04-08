@@ -29,7 +29,7 @@ export default class DataTexture {
         return this.width === width && this.height === height;
     }
 
-    set(x, y, r, g, b, a) {
+    set(x, y, r, g = r, b = g, a = b) {
         const index = (y * this.width + x) * 4;
 
         this.data[index] = r;

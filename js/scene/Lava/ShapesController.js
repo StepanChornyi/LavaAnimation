@@ -8,13 +8,13 @@ let isMouseMoved = false;
 let prevMousePos = new Vector();
 let tmpVec = new Vector();
 
+const colorSideTop = 0xe81e2f;
+const colorCenterTop = 0xff0055;
+const colorSideBot = 0x0249bd;
+const colorCenterBot = 0x8717d1;
+
 export default class ShapesController {
-    constructor(ss) {
-        this.ss = ss;
-        this.a = 0;
-
-        this.grd = document.getElementById('gradient');
-
+    constructor() {
         this.width = this.height = 1;
 
         this.ground = new RectBody();
@@ -22,6 +22,16 @@ export default class ShapesController {
         this.ground3 = new RectBody();
         this.groundCircles = [];
         this.bubbles = [];
+
+        this.renderGroupLeft = new RenderGroup();
+        this.renderGroupRight = new RenderGroup();
+
+        this.renderGroupLeft.colors = [colorSideTop, colorCenterTop, colorCenterBot, colorSideBot];
+        this.renderGroupRight.colors = [colorCenterTop, colorSideTop, colorSideBot, colorCenterBot];
+
+        this.renderGroups = [this.renderGroupLeft, this.renderGroupRight];
+
+        this.updateRenderGroupsDataX();
 
         for (let i = 0; i < 8; i++) {
             const ground = new CircleBody(0, 0, 50);
@@ -38,13 +48,14 @@ export default class ShapesController {
             this.bubbles.push(new CircleBody());
         }
 
-        this.shapes = [
-            this.ground,
-            this.ground2,
-            this.ground3,
-            // ...this.groundCircles,
-            ...this.bubbles
-        ];
+        this.shapes = this.renderGroupLeft.shapes =
+            this.renderGroupRight.shapes = [
+                this.ground,
+                this.ground2,
+                this.ground3,
+                // ...this.groundCircles,
+                ...this.bubbles
+            ];
 
 
         // this._initMouseControl(this.shapes[0]);
@@ -97,16 +108,6 @@ export default class ShapesController {
 
     }
 
-    setBoxes(arr) {
-        this.boxes = [];
-
-        for (let i = 0; i < arr.length; i++) {
-            const { x, y, w, h } = arr[i];
-
-            this.boxes.push(new RectBody(x - w * 0.5, y - h * 0.5, w, h));
-        }
-    }
-
     _initMouseControl(shape) {
         shape.x = window.innerWidth * 0.5;
         shape.y = window.innerHeight * 0.5;
@@ -119,37 +120,14 @@ export default class ShapesController {
         });
     }
 
-    // _animateGround(g) {
-    //     for (let i = 0; i < g.tw.length; i++) {
-    //         g.tw[i].kill();
-    //     }
-
-    //     const tw1 = new UTween(g, { s: 1.3 }, 10 + 5 * Math.random(), {
-    //         ease: Ease.sinusoidalInOut,
-    //         loop: true,
-    //         yoyo: true,
-    //         ease: Ease.sinusoidalInOut,
-    //     });
-
-    //     const tw2 = new UTween(g, { y: g.y + (Math.random() * 0.5) * 200 }, 5 + 10 * Math.random(), {
-    //         ease: Ease.quarticInOut,
-    //         yoyo: true,
-    //         loop: true
-    //     });
-
-    //     g.tw = [tw1, tw2];
-    // }
-
-
     onResize(width, height) {
         this.width = width;
         this.height = height;
 
         this.ground.width = Math.ceil(width / 10) * 10 + 2;
-        this.ground.height = height * 0.1 * this.ss;
+        this.ground.height = height * 0.1;
         this.ground.centerX = width * 0.5;
         this.ground.centerY = height;
-
 
 
         this.ground2.copyFrom(this.ground);
@@ -196,11 +174,19 @@ export default class ShapesController {
         }
 
         this.t = 0;
+
+        this.renderGroupLeft.set(0, 0, this.width * 0.5, this.height);
+        this.renderGroupRight.set(this.width * 0.5, 0, this.width * 0.5, this.height);
+    }
+
+    updateRenderGroupsDataX() {
+        for (let i = 0; i < this.renderGroups.length; i++) {
+            this.renderGroups[i].dataX = i;
+        }
     }
 
     onUpdate() {
         this.t += 0.01666666;
-
         this.ground.x += 1
         this.ground2.x -= 0.5;
 
@@ -213,12 +199,6 @@ export default class ShapesController {
             g.x = g.desiredX + sin * g.moveAmountX;
             g.y = g.desiredY + cos * g.moveAmountY;
             g.s = 1 + sin * cos * 0.5;
-
-            // if (d < 0 && groundCircle.x < -groundCircle.r * 2) {
-            //     groundCircle.x = this.width + groundCircle.r * 2;
-            // } else if (d > 0 && groundCircle.x > this.width + groundCircle.r * 2) {
-            //     groundCircle.x = -groundCircle.r * 2;
-            // }
         }
 
         ///////////////////////
@@ -294,9 +274,17 @@ export default class ShapesController {
         bubble.x += tmpVec.x * 0.5 * distMul;
         bubble.y += tmpVec.y * 0.5 * distMul;
     }
+}
 
+class RenderGroup extends Rect {
+    constructor(...args) {
+        super(...args);
 
-
+        this.dataX = 0;
+        this.colors = [];
+        this.shapes = [];
+        this.meshFlipped = false;
+    }
 }
 
 class CircleBody extends Circle {

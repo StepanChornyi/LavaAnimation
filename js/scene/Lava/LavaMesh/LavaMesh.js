@@ -42,11 +42,6 @@ const attribs = [
     { name: 'vertUv', size: 2 }
 ];
 
-const colorSideTop = 0xe81e2f;
-const colorCenterTop = 0xff0055;
-const colorSideBot = 0x0249bd;
-const colorCenterBot = 0x8717d1;
-
 export default class LavaMesh extends RectMesh {
     constructor(gl) {
         const maskProgram = WEBGL_UTILS.createProgram(gl, vs, maskFs);
@@ -103,34 +98,15 @@ export default class LavaMesh extends RectMesh {
         gl.uniform1f(uniforms[maskEdgeOffsetUnf].location, this.maskEdgeOffset);
     }
 
-    _updateBuffers() {
-        if (!this.dirty)
-            return;
+    _updateBuffers() {}
 
+    clearBuffers(){
         this.vertices = [];
         this.indices = [];
-
-        const boxes = this._getBoxes();
-
-        for (let i = 0; i < boxes.length; i++) {
-            this._addRect(boxes[i], i);
-        }
-
-        this.drawBuffersData();
-
-        this.dirty = false;
     }
 
-    _getBoxes() {
-        const boxLeft = new Rect(0, 0, this.width * 0.5, this.height);
-        const boxRight = new Rect(this.width * 0.5, 0, this.width * 0.5, this.height);
-
-        boxLeft.colors = [colorSideTop, colorCenterTop, colorCenterBot, colorSideBot];
-        boxRight.colors = [colorCenterTop, colorSideTop, colorSideBot, colorCenterBot];
-
-        boxRight.flipped = true;
-
-        return [boxLeft, boxRight];
+    addRenderGroup(renderGroup){
+        this._addRect(renderGroup, renderGroup.dataX);
     }
 
     _addRect(rect, dataX) {

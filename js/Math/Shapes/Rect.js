@@ -10,6 +10,13 @@ export default class Rect extends Shape {
         this.isRect = true;
     }
 
+    set(x, y, w, h){
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+    }
+
     get width() {
         return this.w;
     }

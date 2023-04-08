@@ -54,7 +54,6 @@ export default class Scene extends DisplayObject {
         // gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-
         this.lava.render(this.viewMatrix);
     }
 
@@ -63,22 +62,19 @@ export default class Scene extends DisplayObject {
     }
 
     onResize() {
-        const scale = 1;
         const container = this.container;
         const canvas = this.canvas;
-        const gl = this.gl;
+        const scale = 1;
 
-        this.cachedWidth = container.offsetWidth;
-        this.cachedHeight = container.offsetHeight;
+        const sceneWidth = this.cachedWidth = container.offsetWidth;
+        const sceneHeight = this.cachedHeight = container.offsetHeight;
 
-        canvas.width = Math.ceil(this.cachedWidth * scale);
-        canvas.height = Math.ceil(this.cachedHeight * scale);
+        canvas.width = Math.ceil(sceneWidth * scale);
+        canvas.height = Math.ceil(sceneHeight * scale);
 
-        gl.viewport(0, 0, canvas.width, canvas.height);
+        this._updateViewMatrix(sceneWidth, sceneHeight);
 
-        this.lava.onResize(this.cachedWidth, this.cachedHeight, canvas.width, canvas.height);
-
-        this._updateViewMatrix(this.cachedWidth, this.cachedHeight);
+        this.lava.onResize(sceneWidth, sceneHeight);
     }
 
     _updateViewMatrix(width, height) {
