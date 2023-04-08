@@ -32,8 +32,9 @@ const maskFs = replaceAllArr(baseFs,
 const shapesDataUnf = "shapesData";
 const maskTextureUnf = "maskTexture";
 const maskEdgeOffsetUnf = "maskEdgeOffset";
+const dataTextureSizeIvsUnf = "dataTextureSizeIvs";
 
-const uniforms = [shapesDataUnf, maskTextureUnf, maskEdgeOffsetUnf];
+const uniforms = [shapesDataUnf, maskTextureUnf, maskEdgeOffsetUnf, dataTextureSizeIvsUnf];
 
 const attribs = [
     { name: 'vertPosition', size: 2 },
@@ -85,7 +86,7 @@ export default class LavaMesh extends RectMesh {
         const { gl, uniforms } = this;
 
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.dataTexture);
+        gl.bindTexture(gl.TEXTURE_2D, this.dataTexture.texture);
 
         if (this.maskTexture) {
             gl.activeTexture(gl.TEXTURE1);
@@ -96,16 +97,17 @@ export default class LavaMesh extends RectMesh {
         gl.uniform1i(uniforms[shapesDataUnf].location, 0);
         gl.uniform1i(uniforms[maskTextureUnf].location, 1);
         gl.uniform1f(uniforms[maskEdgeOffsetUnf].location, this.maskEdgeOffset);
+        gl.uniform2f(uniforms[dataTextureSizeIvsUnf].location, 1 / this.dataTexture.width, 1 / this.dataTexture.height);
     }
 
-    _updateBuffers() {}
+    _updateBuffers() { }
 
-    clearBuffers(){
+    clearBuffers() {
         this.vertices = [];
         this.indices = [];
     }
 
-    addRenderGroup(renderGroup){
+    addRenderGroup(renderGroup) {
         this._addRect(renderGroup, renderGroup.dataX);
     }
 

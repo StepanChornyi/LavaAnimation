@@ -57,7 +57,6 @@ export default class ShapesController {
                 ...this.bubbles
             ];
 
-
         // this._initMouseControl(this.shapes[0]);
 
         let snappedShape = null;
@@ -338,6 +337,28 @@ class RectBody extends Rect {
 
         this.width = rect.width;
         this.height = rect.height;
+    }
+}
+
+class CircleAnimObj {
+    constructor(circle) {
+        this.circle = circle;
+
+        this.d = 1;
+        this.sX = 1;
+
+        this.s = 1;
+        this.vx = 0;
+        this.vy = 0;
+        this.tw = [];
+    }
+
+    get shape() {
+        return this.circle;
+    }
+
+    set shape(circle) {
+        this.circle = circle;
     }
 }
 

@@ -6,6 +6,8 @@ varying vec2 uv;
 varying float dataX;
 
 uniform float maskEdgeOffset;
+uniform vec2 dataTextureSizeIvs;
+
 uniform sampler2D dataTexture;
 uniform sampler2D maskTexture;
 
@@ -41,7 +43,7 @@ float distToSinusoide(vec4 sinusoide, vec2 p) {
 }
 
 vec4 getTextel(vec2 pos) {
-    return texture2D(dataTexture, (pos + 0.5) * DATA_TEXTURE_SIZE_IVS);//DATA_TEXTURE_SIZE_IVS - external
+    return texture2D(dataTexture, (pos + 0.5) * dataTextureSizeIvs);
 }
 
 float quadraticOutEase(float k) {
@@ -60,7 +62,7 @@ float getDistanceToLava() {
             break;
         }
 
-        if(int(shape.w) <= 0) {
+        if(int(shape.w) < MIN_RADIUS) {
             distances[i] = distToCircle(shape.xyz, fragPos);
         } else {
             distances[i] = distToSinusoide(shape, fragPos);

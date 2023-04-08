@@ -49,7 +49,7 @@ export default class Lava {
                 }
 
                 if (shape.isCircle) {
-                    this.dataTexture.set(dataX, i, shape.x, shape.y, shape.radius, -1);
+                    this.dataTexture.set(dataX, i, shape.x, shape.y, shape.radius, EMPTY_DATA_VAL);
                 } else if (shape.isRect) {
                     this.dataTexture.set(dataX, i, shape.centerX, shape.centerY, shape.halfWidth, shape.halfHeight);
                 }
@@ -89,9 +89,10 @@ export default class Lava {
 
         mask.bindFramebuffer(true);
 
+        lavaMesh.dataTexture = this.dataTexture;
+
         lavaMesh.maskEdgeOffset = MASK_EDGE_OFFSET;
         lavaMesh.maskTexture = null;
-        lavaMesh.dataTexture = this.dataTexture.texture;
         lavaMesh.setConfig(lavaMesh.maskConfig);
         lavaMesh.render(viewMatrix3x3);
 
