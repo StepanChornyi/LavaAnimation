@@ -317,13 +317,17 @@ class LavaAnimation {
         this.ground = new RectBody();
         this.ground2 = new RectBody();
         this.ground3 = new RectBody();
-        this.circle = new CircleBody();
+        this.circles = [];
+
+        for (let i = 0; i < 25; i++) {
+            this.circles.push(new CircleBody());
+        }
 
         this.renderGroup.shapes = [
             this.ground,
             this.ground2,
             this.ground3,
-            this.circle
+            ...this.circles
         ];
 
         this.t = 0;
@@ -346,9 +350,13 @@ class LavaAnimation {
 
         this.ground3.width = Math.ceil((width * 2) / 10) * 10 + 0.5;
 
-        this.circle.r = 60;
-        this.circle.x = width * 0.5;
-        this.circle.y = height;
+        for (let i = 0; i < this.circles.length; i++) {
+            const circle = this.circles[i];
+
+            circle.r = 60;
+            circle.x = width * Math.random();
+            circle.y = height * 1.3 * Math.random();
+        }
     }
 
     onUpdate(dt) {
@@ -356,13 +364,51 @@ class LavaAnimation {
         this.ground.x += 1
         this.ground2.x -= 0.5;
 
-        this.circle.y -=5;
 
-        if( this.circle.y<0){
+        for (let i = 0; i < this.circles.length; i++) {
+            const circle = this.circles[i];
 
+            const { dist, closest } = this._getClosest(circle);
 
-            this.circle.y = this.renderGroup.height
+            if (closest && dist < (closest.radius + circle.radius)) {
+                const d = new Vector(circle.x, circle.y).subtract(closest);
+
+                d.multiplyScalar(0.001);
+
+                circle.x += d.x;
+                circle.y += d.y;
+            }
+
+            circle.y -= 1;
+
+            const p = (circle.y) / this.renderGroup.height;
+
+            circle.s = Math.min(1, Ease.cubicOut(p - 0.2));
+
+            if (circle.y < 0) {
+
+                circle.y = this.renderGroup.height * 1.3;
+            }
         }
+    }
+
+    _getClosest(circle) {
+        let minDist = Infinity, closest = null;
+
+        for (let i = 0; i < this.circles.length; i++) {
+            if (this.circles[i] === circle) {
+                continue;
+            }
+
+            const dist = MathEx.distance(circle.x, circle.y, this.circles[i].x, this.circles[i].y);
+
+            if (dist < minDist) {
+                minDist = dist;
+                closest = this.circles[i];
+            }
+        }
+
+        return { dist: minDist, closest };
     }
 }
 
