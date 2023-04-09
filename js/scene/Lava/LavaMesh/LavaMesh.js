@@ -116,7 +116,7 @@ export default class LavaMesh extends RectMesh {
         const [c0, c1, c2, c3] = rect.colors;
 
         const offset = this.vertices.length / this.vertexByteSize;
-        const RECT_INDICES = rect.flipped ? RectMesh.RECT_INDICES_FLIPPED : RectMesh.RECT_INDICES;
+        const RECT_INDICES = rect.meshFlipped ? RectMesh.RECT_INDICES_FLIPPED : RectMesh.RECT_INDICES;
 
         this.vertices.push(
             rect.x, rect.y, c0, dataX,

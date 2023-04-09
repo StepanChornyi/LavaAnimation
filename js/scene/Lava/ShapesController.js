@@ -8,9 +8,9 @@ let isMouseMoved = false;
 let prevMousePos = new Vector();
 let tmpVec = new Vector();
 
-const colorSideTop = 0xe81e2f;
-const colorCenterTop = 0xff0055;
-const colorSideBot = 0x0249bd;
+const colorSideTop = 0xd100ff;
+const colorCenterTop = 0xff1f00;
+const colorSideBot = 0x2b17d1;
 const colorCenterBot = 0x8717d1;
 
 export default class ShapesController {
@@ -30,7 +30,7 @@ export default class ShapesController {
 
 
         this.animationLeft = new LavaAnimation();
-        this.animationLeft.renderGroup.colors = [colorSideTop, colorCenterTop, colorCenterBot, colorSideBot];
+        this.animationLeft.renderGroup.colors = [colorCenterTop, colorSideTop, colorSideBot, colorCenterBot];
 
         this.animationRight = new LavaAnimation();
         this.animationRight.renderGroup.colors = [colorCenterTop, colorSideTop, colorSideBot, colorCenterBot];
@@ -193,7 +193,7 @@ export default class ShapesController {
         const gh = this.width * 0.5;
 
         this.animationLeft.renderGroup.set(0, 0, gw, gh);
-        this.animationLeft.renderGroup.meshFlipped = false;
+        this.animationLeft.renderGroup.meshFlipped = true;
 
 
         this.animationLeft.onResize();
@@ -204,7 +204,7 @@ export default class ShapesController {
 
 
         this.animationRight.renderGroup.set(0, 0, gw, gh);
-        this.animationRight.renderGroup.meshFlipped = false;
+        this.animationRight.renderGroup.meshFlipped = true;
 
         this.animationRight.onResize();
 
@@ -391,7 +391,7 @@ class LavaAnimation {
                 circle.y += d.y;
             }
 
-            circle.y -= 1;
+            circle.y -= lerp(0.5, 1, 1 - (circle.y) / this.renderGroup.height);
             circle.x += speedX;
 
             const p = (circle.y) / this.renderGroup.height;
@@ -532,7 +532,11 @@ class CircleAnimObj {
 }
 
 function rndBtw(a, b) {
-    return a + (b - a) * Math.random();
+    return lerp(a, b, Math.random());
+}
+
+function lerp(a, b, t) {
+    return a + (b - a) * t;
 }
 
 function rndSign() {
