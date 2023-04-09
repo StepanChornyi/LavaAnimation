@@ -39,8 +39,7 @@ const uniforms = [shapesDataUnf, maskTextureUnf, maskEdgeOffsetUnf, dataTextureS
 const attribs = [
     { name: 'vertPosition', size: 2 },
     { name: 'vertColor', size: 1 },
-    { name: 'vertDataX', size: 1 },
-    { name: 'vertUv', size: 2 }
+    { name: 'vertDataX', size: 1 }
 ];
 
 export default class LavaMesh extends RectMesh {
@@ -64,6 +63,8 @@ export default class LavaMesh extends RectMesh {
         this.maskEdgeOffset = -1;
         this.maskTexture = null;
         this.dataTexture = null;
+
+        this._transformIvsDataArr = new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]);
     }
 
     setConfig({ program, attribs, uniforms }) {
@@ -117,16 +118,11 @@ export default class LavaMesh extends RectMesh {
         const offset = this.vertices.length / this.vertexByteSize;
         const RECT_INDICES = rect.flipped ? RectMesh.RECT_INDICES_FLIPPED : RectMesh.RECT_INDICES;
 
-        const ul = rect.x / this.width;
-        const ur = rect.right / this.width;
-        const vt = 1 - rect.y / this.height;
-        const vb = 1 - rect.bottom / this.height;
-
         this.vertices.push(
-            rect.x, rect.y, c0, dataX, ul, vt,
-            rect.right, rect.y, c1, dataX, ur, vt,
-            rect.right, rect.bottom, c2, dataX, ur, vb,
-            rect.x, rect.bottom, c3, dataX, ul, vb
+            rect.x, rect.y, c0, dataX,
+            rect.right, rect.y, c1, dataX,
+            rect.right, rect.bottom, c2, dataX,
+            rect.x, rect.bottom, c3, dataX,
         );
 
         for (let i = 0; i < RECT_INDICES.length; i++) {

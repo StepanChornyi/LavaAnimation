@@ -26,10 +26,17 @@ export default class ShapesController {
         this.renderGroupLeft = new RenderGroup();
         this.renderGroupRight = new RenderGroup();
 
-        this.renderGroupLeft.colors = [colorSideTop, colorCenterTop, colorCenterBot, colorSideBot];
         this.renderGroupRight.colors = [colorCenterTop, colorSideTop, colorSideBot, colorCenterBot];
 
-        this.renderGroups = [this.renderGroupLeft, this.renderGroupRight];
+
+        this.animationLeft = new LavaAnimation();
+        this.animationLeft.renderGroup.colors = [colorSideTop, colorCenterTop, colorCenterBot, colorSideBot];
+
+        this.animationRight = new LavaAnimation();
+        this.animationRight.renderGroup.colors = [colorCenterTop, colorSideTop, colorSideBot, colorCenterBot];
+
+
+        this.renderGroups = [this.animationLeft.renderGroup, this.animationRight.renderGroup];
 
         this.updateRenderGroupsDataX();
 
@@ -48,7 +55,7 @@ export default class ShapesController {
             this.bubbles.push(new CircleBody());
         }
 
-        this.shapes = this.renderGroupLeft.shapes =
+        this.shapes =
             this.renderGroupRight.shapes = [
                 this.ground,
                 this.ground2,
@@ -174,8 +181,32 @@ export default class ShapesController {
 
         this.t = 0;
 
-        this.renderGroupLeft.set(0, 0, this.width * 0.5, this.height);
-        this.renderGroupRight.set(this.width * 0.5, 0, this.width * 0.5, this.height);
+        // this.renderGroupRight.set(this.width * 0.5, 0, this.width * 0.5, this.height);
+        // this.renderGroupRight.set(0, 0, this.width, this.height);
+
+        const gw = this.height;
+        const gh = this.width * 0.5;
+
+        this.animationLeft.renderGroup.set(0, 0, gw, gh);
+        this.animationLeft.renderGroup.meshFlipped = false;
+
+
+        this.animationLeft.onResize();
+
+        this.animationLeft.transform.identity();
+        this.animationLeft.transform.rotate(Math.PI * 0.5);
+        this.animationLeft.transform.translate(0, -gh);
+
+
+        this.animationRight.renderGroup.set(0, 0, gw, gh);
+        this.animationRight.renderGroup.meshFlipped = false;
+
+        this.animationRight.onResize();
+
+        this.animationRight.transform.identity();
+        this.animationRight.transform.rotate(-Math.PI * 0.5);
+        this.animationRight.transform.translate(0, gh);
+        this.animationRight.transform.scale(-1, 1);
     }
 
     updateRenderGroupsDataX() {
@@ -188,6 +219,9 @@ export default class ShapesController {
         this.t += 0.01666666;
         this.ground.x += 1
         this.ground2.x -= 0.5;
+
+        this.animationLeft.onUpdate();
+        this.animationRight.onUpdate();
 
         for (let i = 0; i < this.groundCircles.length; i++) {
             const g = this.groundCircles[i];
@@ -275,6 +309,63 @@ export default class ShapesController {
     }
 }
 
+class LavaAnimation {
+    constructor() {
+        this.renderGroup = new RenderGroup();
+        this.transform = this.renderGroup.transform;
+
+        this.ground = new RectBody();
+        this.ground2 = new RectBody();
+        this.ground3 = new RectBody();
+        this.circle = new CircleBody();
+
+        this.renderGroup.shapes = [
+            this.ground,
+            this.ground2,
+            this.ground3,
+            this.circle
+        ];
+
+        this.t = 0;
+    }
+
+    onResize() {
+        const width = this.renderGroup.width;
+        const height = this.renderGroup.height;
+
+        this.ground.width = Math.ceil((width * 2) / 10) * 10 + 3;
+        this.ground.height = height * 0.05;
+        this.ground.centerX = width * 0.5;
+        this.ground.centerY = height;
+
+        this.ground2.copyFrom(this.ground);
+
+        this.ground2.width = Math.ceil((width * 2) / 10) * 10 + 1;
+
+        this.ground3.copyFrom(this.ground);
+
+        this.ground3.width = Math.ceil((width * 2) / 10) * 10 + 0.5;
+
+        this.circle.r = 60;
+        this.circle.x = width * 0.5;
+        this.circle.y = height;
+    }
+
+    onUpdate(dt) {
+        this.t += 0.01666666;
+        this.ground.x += 1
+        this.ground2.x -= 0.5;
+
+        this.circle.y -=5;
+
+        if( this.circle.y<0){
+
+
+            this.circle.y = this.renderGroup.height
+        }
+    }
+}
+
 class RenderGroup extends Rect {
     constructor(...args) {
         super(...args);
@@ -283,6 +374,7 @@ class RenderGroup extends Rect {
         this.colors = [];
         this.shapes = [];
         this.meshFlipped = false;
+        this.transform = new Matrix();
     }
 }
 

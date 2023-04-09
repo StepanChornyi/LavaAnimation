@@ -21,7 +21,13 @@ export default class Lava {
 
         this.dataTexture = new DataTexture(gl);
         this.mask = new RenderTexture(gl);
-        this.lavaMesh = new LavaMesh(gl);
+        // this.lavaMesh = new LavaMesh(gl);
+
+        this.meshes = [];
+
+        for (let i = 0; i < this.shapesController.renderGroups.length; i++) {
+            this.meshes.push(new LavaMesh(gl))
+        }
 
         this.image = new FullScreenImage(gl);//tmp for debug
 
@@ -60,7 +66,7 @@ export default class Lava {
     }
 
     onResize(width, height) {
-        this.lavaMesh.setSize(width, height);
+        // this.lavaMesh.setSize(width, height);
 
         this.mask.setSize(
             Math.round(this.gl.canvas.width * MASK_SCALE),
@@ -69,35 +75,48 @@ export default class Lava {
 
         this.shapesController.onResize(width, height);
 
-        this.lavaMesh.clearBuffers();
+
+
+        // this.lavaMesh.clearBuffers();
 
         for (let i = 0; i < this.shapesController.renderGroups.length; i++) {
-            this.lavaMesh.addRenderGroup(this.shapesController.renderGroups[i]);
+            this.meshes[i].setSize(width, height);
+
+            this.meshes[i].clearBuffers();
+
+            this.meshes[i].addRenderGroup(this.shapesController.renderGroups[i]);
+
+            this.meshes[i].drawBuffersData();
         }
 
-        this.lavaMesh.drawBuffersData();
+        // this.lavaMesh.drawBuffersData();
 
         // this.debugger && this.debugger.onResize(sceneWidth, sceneHeight);
     }
 
     render(viewMatrix3x3) {
         const gl = this.gl;
-        const lavaMesh = this.lavaMesh;
+        // const lavaMesh = this.lavaMesh;
         const mask = this.mask;
 
         this.updateShapesData();
 
         mask.bindFramebuffer(true);
 
-        lavaMesh.dataTexture = this.dataTexture;
+        for (let i = 0; i < this.meshes.length; i++) {
+            const lavaMesh = this.meshes[i];
 
-        lavaMesh.saveTransform();
-        lavaMesh.resetTransform();
+            lavaMesh.dataTexture = this.dataTexture;
 
-        lavaMesh.maskEdgeOffset = MASK_EDGE_OFFSET;
-        lavaMesh.maskTexture = null;
-        lavaMesh.setConfig(lavaMesh.maskConfig);
-        lavaMesh.render(viewMatrix3x3);
+            lavaMesh.transform.copyFrom(this.shapesController.renderGroups[i].transform);
+
+
+            // lavaMesh.transform.identity();
+            lavaMesh.maskEdgeOffset = MASK_EDGE_OFFSET;
+            lavaMesh.maskTexture = null;
+            lavaMesh.setConfig(lavaMesh.maskConfig);
+            lavaMesh.render(viewMatrix3x3);
+        }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.clearColor(0, 0, 0, 0);
@@ -105,10 +124,13 @@ export default class Lava {
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        lavaMesh.restoreTransform();
-        lavaMesh.maskTexture = mask.texture;
-        lavaMesh.setConfig(lavaMesh.finalMaskedConfig);
-        lavaMesh.render(viewMatrix3x3);
+        for (let i = 0; i < this.meshes.length; i++) {
+            const lavaMesh = this.meshes[i];
+            // lavaMesh.transform.copyFrom(this.shapesController.renderGroups[i].transform);
+            lavaMesh.maskTexture = mask.texture;
+            lavaMesh.setConfig(lavaMesh.finalMaskedConfig);
+            lavaMesh.render(viewMatrix3x3);
+        }
 
         {
             // this.image.texture =  mask.texture;
