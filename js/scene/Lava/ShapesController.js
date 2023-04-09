@@ -112,6 +112,11 @@ export default class ShapesController {
             snappedShape.y = startShapePos.y + y - startMousePos.y;
         });
 
+        this.speedY = 0;
+
+        addEventListener("wheel", (event) => {
+            this.speedY -= event.deltaY * 0.05;
+        });
     }
 
     _initMouseControl(shape) {
@@ -215,13 +220,15 @@ export default class ShapesController {
         }
     }
 
-    onUpdate() {
+    onUpdate(dt) {
         this.t += 0.01666666;
         this.ground.x += 1
         this.ground2.x -= 0.5;
 
-        this.animationLeft.onUpdate();
-        this.animationRight.onUpdate();
+        this.speedY *= 0.9;
+
+        this.animationLeft.onUpdate(dt, this.speedY);
+        this.animationRight.onUpdate(dt, this.speedY);
 
         for (let i = 0; i < this.groundCircles.length; i++) {
             const g = this.groundCircles[i];
@@ -309,6 +316,8 @@ export default class ShapesController {
     }
 }
 
+const OFF_X = 150;
+
 class LavaAnimation {
     constructor() {
         this.renderGroup = new RenderGroup();
@@ -337,33 +346,36 @@ class LavaAnimation {
         const width = this.renderGroup.width;
         const height = this.renderGroup.height;
 
-        this.ground.width = Math.ceil((width * 2) / 10) * 10 + 3;
+        this.ground.width = Math.ceil((width * 100) / 10) * 10 + 3;
         this.ground.height = height * 0.05;
         this.ground.centerX = width * 0.5;
         this.ground.centerY = height;
 
         this.ground2.copyFrom(this.ground);
 
-        this.ground2.width = Math.ceil((width * 2) / 10) * 10 + 1;
+        this.ground2.width = Math.ceil((width * 100) / 10) * 10 + 1;
 
         this.ground3.copyFrom(this.ground);
 
-        this.ground3.width = Math.ceil((width * 2) / 10) * 10 + 0.5;
+        this.ground3.width = Math.ceil((width * 100) / 10) * 10 + 0.5;
 
         for (let i = 0; i < this.circles.length; i++) {
             const circle = this.circles[i];
 
-            circle.r = 60;
-            circle.x = width * Math.random();
-            circle.y = height * 1.3 * Math.random();
+            circle.r = rndBtw(60, 150);
+            circle.x = rndBtw(-OFF_X, width + OFF_X);
+            circle.y = rndBtw(0, height * 1.3);
         }
     }
 
-    onUpdate(dt) {
+    onUpdate(dt, speedX) {
         this.t += 0.01666666;
         this.ground.x += 1
         this.ground2.x -= 0.5;
 
+        this.ground.x += speedX;
+        this.ground2.x += speedX;
+        this.ground3.x += speedX;
 
         for (let i = 0; i < this.circles.length; i++) {
             const circle = this.circles[i];
@@ -380,15 +392,34 @@ class LavaAnimation {
             }
 
             circle.y -= 1;
+            circle.x += speedX;
 
             const p = (circle.y) / this.renderGroup.height;
 
-            circle.s = Math.min(1, Ease.cubicOut(p - 0.2));
+            const scaleY = Math.min(1, Ease.cubicOut(p - 0.2));
+            const scaleX = Math.min(1, 1 - Math.abs(this.renderGroup.width * 0.5 - circle.x) / (OFF_X + this.renderGroup.width));
+
+            circle.s = Math.min(scaleY, scaleX);
+
 
             if (circle.y < 0) {
-
                 circle.y = this.renderGroup.height * 1.3;
             }
+
+
+            if (circle.x < -OFF_X) {
+                circle.x = this.renderGroup.width + OFF_X;
+                circle.y = rndBtw(0, this.renderGroup.height * 1.3);
+            }
+
+            if (circle.x > this.renderGroup.width + OFF_X) {
+                circle.x = -OFF_X;
+                circle.y = rndBtw(0, this.renderGroup.height * 1.3);
+            }
+
+            // if (circle.x < ) {
+            //     circle.y = this.renderGroup.height * 1.3;
+            // }
         }
     }
 
