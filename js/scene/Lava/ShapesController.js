@@ -4,214 +4,59 @@ import Rect from '../../Math/Shapes/Rect';
 import Circle from '../../Math/Shapes/Circle';
 import UTween from '../../libs/utween';
 
-let isMouseMoved = false;
-let prevMousePos = new Vector();
-let tmpVec = new Vector();
-
-const colorSideTop = 0xd100ff;
 const colorCenterTop = 0xff1f00;
-const colorSideBot = 0x2b17d1;
 const colorCenterBot = 0x8717d1;
+const colorSideBot = 0x2b17d1;
+const colorSideTop = 0xd100ff;
 
 export default class ShapesController {
     constructor() {
         this.width = this.height = 1;
 
-        this.ground = new RectBody();
-        this.ground2 = new RectBody();
-        this.ground3 = new RectBody();
-        this.groundCircles = [];
-        this.bubbles = [];
-
-        this.renderGroupLeft = new RenderGroup();
-        this.renderGroupRight = new RenderGroup();
-
-        this.renderGroupRight.colors = [colorCenterTop, colorSideTop, colorSideBot, colorCenterBot];
-
-
         this.animationLeft = new LavaAnimation();
-        this.animationLeft.renderGroup.colors = [colorCenterTop, colorSideTop, colorSideBot, colorCenterBot];
+        this.animationLeft.renderGroup.colors = [colorCenterTop, colorCenterBot, colorSideBot, colorSideTop];
 
         this.animationRight = new LavaAnimation();
-        this.animationRight.renderGroup.colors = [colorCenterTop, colorSideTop, colorSideBot, colorCenterBot];
-
+        this.animationRight.renderGroup.colors = [colorCenterTop, colorCenterBot, colorSideBot, colorSideTop];
 
         this.renderGroups = [this.animationLeft.renderGroup, this.animationRight.renderGroup];
 
         this.updateRenderGroupsDataX();
 
-        for (let i = 0; i < 8; i++) {
-            const ground = new CircleBody(0, 0, 50);
-
-            ground.d = Math.random() < 0.5 ? -1 : 1;
-            ground.sX = 0.5 + Math.random();
-
-            this.groundCircles.push(ground);
-
-            // this._animateGround(ground);
-        }
-
-        for (let i = 0; i < 20; i++) {
-            this.bubbles.push(new CircleBody());
-        }
-
-        this.shapes =
-            this.renderGroupRight.shapes = [
-                this.ground,
-                this.ground2,
-                this.ground3,
-                // ...this.groundCircles,
-                ...this.bubbles
-            ];
-
-        // this._initMouseControl(this.shapes[0]);
-
-        let snappedShape = null;
-        const startShapePos = new Vector();
-        const startMousePos = new Vector();
-
-        this.activeBoxIndex = -1;
-        this.boxes = [];
-
-        window.addEventListener('mousedown', e => {
-            const { x, y } = startMousePos.set(e.clientX, e.clientY)//this.transformIvs.transformVector(new Vector(e.clientX, e.clientY));
-
-            for (let i = 0; i < this.shapes.length; i++) {
-                if (this.shapes[i].contains(x, y)) {
-                    snappedShape = this.shapes[i];
-                    startShapePos.copyFrom(snappedShape);
-                    return;
-                }
-            }
-
-            for (let i = 0; i < this.boxes.length; i++) {
-                if (this.boxes[i].contains(x, y)) {
-                    if (this.activeBoxIndex === i) {
-                        this.activeBoxIndex = -1
-                    } else {
-                        this.activeBoxIndex = i
-                    }
-                    return;
-                }
-            }
-        });
-
-        window.addEventListener('mouseup', e => {
-            snappedShape = null;
-        });
-
-
-
-        window.addEventListener('mousemove', e => {
-            if (!snappedShape)
-                return;
-
-            const { x, y } = tmpVec.set(e.clientX, e.clientY)//this.transformIvs.transformVector(new Vector(e.clientX, e.clientY));
-
-            snappedShape.x = startShapePos.x + x - startMousePos.x;
-            snappedShape.y = startShapePos.y + y - startMousePos.y;
-        });
-
         this.speedY = 0;
 
         addEventListener("wheel", (event) => {
-            this.speedY -= event.deltaY * 0.05;
-        });
-    }
-
-    _initMouseControl(shape) {
-        shape.x = window.innerWidth * 0.5;
-        shape.y = window.innerHeight * 0.5;
-
-        window.addEventListener('mousemove', e => {
-            const { x, y } = new Vector(e.clientX, e.clientY)//this.transformIvs.transformVector(new Vector(e.clientX, e.clientY));
-
-            shape.x = x - shape.radius;
-            shape.y = y - shape.radius;
+            this.speedY -= event.deltaY * 0.5;
         });
     }
 
     onResize(width, height) {
+        const { animationLeft, animationRight } = this;
+
         this.width = width;
         this.height = height;
 
-        this.ground.width = Math.ceil(width / 10) * 10 + 2;
-        this.ground.height = height * 0.1;
-        this.ground.centerX = width * 0.5;
-        this.ground.centerY = height;
+        const gw = height;
+        const gh = width * 0.5;
 
+        animationLeft.renderGroup.set(0, 0, gw, gh);
+        animationLeft.renderGroup.meshFlipped = true;
 
-        this.ground2.copyFrom(this.ground);
+        animationLeft.onResize();
 
+        animationLeft.transform.identity();
+        animationLeft.transform.rotate(Math.PI * 0.5);
+        animationLeft.transform.translate(0, -gh);
 
-        this.ground2.width = Math.ceil(width / 10) * 10 + 1;
+        animationRight.renderGroup.set(0, 0, gw, gh);
+        animationRight.renderGroup.meshFlipped = true;
 
-        this.ground3.copyFrom(this.ground);
+        animationRight.onResize();
 
-        this.ground3.width = Math.ceil(width / 10) * 10 + 0.5;
-
-
-        const offset = 50;
-        const step = (this.width + offset * 2) / this.groundCircles.length;
-
-        for (let i = 0; i < this.groundCircles.length; i++) {
-            const g = this.groundCircles[i];
-
-            g.x = -offset + step * (i + 0.5);
-            g.y = this.ground.top - 100;
-            g.r = 10 + 10 * Math.random();
-
-            g.desiredY = g.y;
-            g.desiredX = g.x;
-            g.timeShift = Math.random() * Math.PI * 2;
-            g.timeScale = rndBtw(0.1, 1) * rndSign();
-            g.moveAmountX = rndBtw(35, 80);
-            g.moveAmountY = rndBtw(10, 35);
-
-
-            // this._animateGround(g);
-        }
-
-        for (let i = 0; i < this.bubbles.length; i++) {
-            const bubble = this.bubbles[i];
-
-            bubble.x = this.width * Math.random();
-            bubble.y = this.height * Math.random() * 2;
-
-            bubble.desiredX = bubble.x;
-
-            bubble.r = 80 + 60 * Math.random();
-            bubble.defaultRadius = bubble.r;
-        }
-
-        this.t = 0;
-
-        // this.renderGroupRight.set(this.width * 0.5, 0, this.width * 0.5, this.height);
-        // this.renderGroupRight.set(0, 0, this.width, this.height);
-
-        const gw = this.height;
-        const gh = this.width * 0.5;
-
-        this.animationLeft.renderGroup.set(0, 0, gw, gh);
-        this.animationLeft.renderGroup.meshFlipped = true;
-
-
-        this.animationLeft.onResize();
-
-        this.animationLeft.transform.identity();
-        this.animationLeft.transform.rotate(Math.PI * 0.5);
-        this.animationLeft.transform.translate(0, -gh);
-
-
-        this.animationRight.renderGroup.set(0, 0, gw, gh);
-        this.animationRight.renderGroup.meshFlipped = true;
-
-        this.animationRight.onResize();
-
-        this.animationRight.transform.identity();
-        this.animationRight.transform.rotate(-Math.PI * 0.5);
-        this.animationRight.transform.translate(0, gh);
-        this.animationRight.transform.scale(-1, 1);
+        animationRight.transform.identity();
+        animationRight.transform.rotate(-Math.PI * 0.5);
+        animationRight.transform.translate(0, gh);
+        animationRight.transform.scale(-1, 1);
     }
 
     updateRenderGroupsDataX() {
@@ -221,98 +66,10 @@ export default class ShapesController {
     }
 
     onUpdate(dt) {
-        this.t += 0.01666666;
-        this.ground.x += 1
-        this.ground2.x -= 0.5;
+        this.speedY *= 0.969;
 
-        this.speedY *= 0.9;
-
-        this.animationLeft.onUpdate(dt, this.speedY);
-        this.animationRight.onUpdate(dt, this.speedY);
-
-        for (let i = 0; i < this.groundCircles.length; i++) {
-            const g = this.groundCircles[i];
-
-            const sin = Math.sin((this.t + g.timeShift) * g.timeScale);
-            const cos = Math.cos((this.t + g.timeShift) * g.timeScale);
-
-            g.x = g.desiredX + sin * g.moveAmountX;
-            g.y = g.desiredY + cos * g.moveAmountY;
-            g.s = 1 + sin * cos * 0.5;
-        }
-
-        ///////////////////////
-
-        // isMouseMoved = !prevMousePos.equals(tmpVec.set(Black.input.pointerX, Black.input.pointerY), 0.5);
-        // prevMousePos.set(Black.input.pointerX, Black.input.pointerY);
-
-        for (let i = 0; i < this.bubbles.length; i++) {
-            const bubble = this.bubbles[i];
-
-            // if (isMouseMoved) {
-            //     this._updateBubbleToMouse(bubble);
-            // }
-
-            bubble.vy -= 0.01;
-
-            bubble.vx *= 0.98;
-            // bubble.vy *= 0.98;
-
-            bubble.x += (bubble.desiredX - bubble.x) * 0.01;
-            bubble.y += bubble.vy;
-            bubble.r += -0.1;
-
-            if (bubble.x < -bubble.radius * 2) {
-                bubble.x = this.width + bubble.radius * 1.5;
-                bubble.desiredX = bubble.x;
-            }
-
-            if (bubble.x > this.width + bubble.radius * 2) {
-                bubble.x = -bubble.radius * 1.5;
-                bubble.desiredX = bubble.x;
-            }
-
-            if (bubble.y < -bubble.radius * 2 || bubble.r <= -10) {
-                bubble.x = this.width * Math.random();
-                bubble.y = this.height + bubble.defaultRadius * 2 + 100;
-                bubble.r = bubble.defaultRadius;
-                bubble.vy = 0;
-                bubble.desiredX = bubble.x;
-
-            }
-        }
-    }
-
-    _updateBubbleToMouse(bubble) {
-        tmpVec.set(Black.input.pointerX, Black.input.pointerY);
-
-        const snapRange = 200;
-
-        const dx = tmpVec.x - bubble.x;
-        const dy = tmpVec.y - bubble.y;
-
-        if (Math.abs(dx) > snapRange || Math.abs(dy) > snapRange) {
-            return;
-        }
-
-        tmpVec.set(dx, dy);
-
-        const length = tmpVec.length();
-
-        if (length > snapRange) {
-            return;
-        }
-
-        tmpVec.x /= length;
-        tmpVec.y /= length;
-
-        const distMul = Ease.sinusoidalInOut(length / snapRange);
-
-        bubble.vx += tmpVec.x * 0.2 * distMul;
-        bubble.vy += tmpVec.y * 0.2 * distMul;
-
-        bubble.x += tmpVec.x * 0.5 * distMul;
-        bubble.y += tmpVec.y * 0.5 * distMul;
+        this.animationLeft.onUpdate(dt, -this.speedY);
+        this.animationRight.onUpdate(dt, -this.speedY);
     }
 }
 
@@ -332,14 +89,15 @@ class LavaAnimation {
             this.circles.push(new CircleBody());
         }
 
+        this.staticCircle = new CircleBody();
+
         this.renderGroup.shapes = [
             this.ground,
             this.ground2,
             this.ground3,
-            ...this.circles
+            ...this.circles,
+            this.staticCircle
         ];
-
-        this.t = 0;
     }
 
     onResize() {
@@ -359,6 +117,10 @@ class LavaAnimation {
 
         this.ground3.width = Math.ceil((width * 100) / 10) * 10 + 0.5;
 
+        this.staticCircle.r = 200;
+        this.staticCircle.x = width * 0.4;
+        this.staticCircle.y = 0;
+
         for (let i = 0; i < this.circles.length; i++) {
             const circle = this.circles[i];
 
@@ -369,7 +131,6 @@ class LavaAnimation {
     }
 
     onUpdate(dt, speedX) {
-        this.t += 0.01666666;
         this.ground.x += 1
         this.ground2.x -= 0.5;
 
@@ -377,10 +138,20 @@ class LavaAnimation {
         this.ground2.x += speedX;
         this.ground3.x += speedX;
 
+        this.staticCircle.x -= speedX;
+
+        if (this.staticCircle.x < -this.staticCircle.r) {
+            this.staticCircle.x = this.renderGroup.width + this.staticCircle.r;
+        }
+
+        if (this.staticCircle.x > this.renderGroup.width + this.staticCircle.r) {
+            this.staticCircle.x = -this.staticCircle.r;
+        }
+
         for (let i = 0; i < this.circles.length; i++) {
             const circle = this.circles[i];
 
-            const { dist, closest } = this._getClosest(circle);
+            const { dist, closest } = this._getClosest(circle);//todo optimize this
 
             if (closest && dist < (closest.radius + circle.radius)) {
                 const d = new Vector(circle.x, circle.y).subtract(closest);
@@ -392,9 +163,11 @@ class LavaAnimation {
             }
 
             circle.y -= lerp(0.5, 1, 1 - (circle.y) / this.renderGroup.height);
-            circle.x += speedX;
 
             const p = (circle.y) / this.renderGroup.height;
+
+            circle.x += speedX * p;
+            circle.x += -5 * (1 - p) * (1 - p);
 
             const scaleY = Math.min(1, Ease.cubicOut(p - 0.2));
             const scaleX = Math.min(1, 1 - Math.abs(this.renderGroup.width * 0.5 - circle.x) / (OFF_X + this.renderGroup.width));
@@ -542,47 +315,3 @@ function lerp(a, b, t) {
 function rndSign() {
     return Math.random() < 0.5 ? -1 : 1;
 }
-
-// window.addEventListener("wheel", (e) => {
-//     // for (let i = 0; i < this.bubbles.length; i++) {
-//     //     const y = this.bubbles[i].y / this.height;
-
-
-//     //     this.bubbles[i].desiredX += e.deltaY * (this.mirrored ? 1 : -1) * y;
-//     // }
-
-//     for (let i = 0; i < this.groundCircles.length; i++) {
-//         const startR = this.groundCircles[i].r;
-
-//         let tw = new UTween(this.groundCircles[i], { r: 1000 }, 1.5, {
-//             ease: Ease.backIn,
-//         })
-
-//         tw.on("update", () => {
-//             if (i) return;
-
-//             document.body.style.filter = `brightness(${1 - Math.max(0, MathEx.lerp(-1, 1, tw.elapsed))})`;
-
-//             // this.grd.style.opacity = `${1 - Math.max(0, MathEx.lerp(-1, 1, tw.elapsed))}`;
-//         });
-
-//         tw.once("complete", () => {
-//             tw = new UTween(this, { a: 0 }, 2, {
-//                 ease: Ease.cubicInOut,
-//             })
-
-//             tw.on("update", () => {
-//                 if (i) return;
-
-//                 document.body.style.filter = `brightness(${tw.elapsed})`;
-//                 // this.grd.style.opacity = `${tw.elapsed}`;
-//             });
-
-//             new UTween(this.groundCircles[i], { r: startR, delay: 0.3 }, 2, {
-//                 ease: Ease.cubicInOut,
-//             })
-//         });
-
-
-//     }
-// });

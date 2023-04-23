@@ -33,13 +33,10 @@ float distToRect(vec4 rect, vec2 p) {
 }
 
 float distToSinusoide(vec4 sinusoide, vec2 p) {
-    vec2 o = abs(p - sinusoide.xy) - sinusoide.zw;
+    float sinVal = sin((fragPos.x - sinusoide.x) * 0.01 * mod(sinusoide.z, 10.0));
+    vec2 sinPoint = vec2(p.x, sinusoide.y + sinVal * sinusoide.w);
 
-    float dist = length(max(o, 0.0)) + max(min(o.x, 0.0), min(o.y, 0.0));
-
-    float sinDist = distance(p, vec2(p.x, sinusoide.y + sin((fragPos.x - sinusoide.x) * 0.01 * mod(sinusoide.z, 10.0)) * sinusoide.w)) - 80.0;
-
-    return sinDist;
+    return abs(p.y - sinPoint.y) - 80.0;
 }
 
 vec4 getTextel(vec2 pos) {
