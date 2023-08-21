@@ -1,6 +1,6 @@
 class WebglUtils {
   getWebGlContext(canvas) {
-    const gl = canvas.getContext("webgl2")  || canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    const gl = canvas.getContext("webgl2") || canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
 
     if (!gl) {
       console.warn('webgl not supported');
@@ -47,6 +47,13 @@ class WebglUtils {
     return program;
   }
 
+  bindViewBuffer(gl) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.clearColor(0, 0, 0, 0);
+    gl.colorMask(true, true, true, true);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  }
 }
 
 const WEBGL_UTILS = new WebglUtils();

@@ -28,7 +28,17 @@ export default class RenderTexture {
         gl.clearColor(0, 0, 0, 0);
         gl.colorMask(true, true, true, true);
         gl.viewport(0, 0, this.width, this.height);
-        clear && gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        clear && this.clear();
+
+        return this;
+    }
+
+    clear() {
+        const gl = this.gl;
+
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        return this;
     }
 
     setSize(width, height) {

@@ -41,7 +41,6 @@ export default class Mesh2D extends Mesh {
         this.transform.copyFrom(this._savedTransform);
     }
 
-
     _updateBuffers() { }
 
     _getTransformDataArr() {
