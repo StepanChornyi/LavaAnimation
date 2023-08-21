@@ -8,23 +8,28 @@ uniform sampler2D myTex;
 void main() {
     float dist = length(vertPos.xy);
 
-    vec4 pixelData = texture2D(myTex, uv);
-
     if(dist < vertPos.z) {
         float color = 1.0 - dist / vertPos.z;
+        vec4 dst = texture2D(myTex, uv);
+        vec4 src = dst;
 
-        if(pixelData.r == 0.0) {
-            gl_FragColor = vec4(color, 0.0, 0.0, 1.0);
+        if(dst.r == 0.0) {
+            src = vec4(color, 0.0, 0.0, 0.0);
         } else {
-            if(pixelData.r < color) {
-                gl_FragColor = vec4(color, pixelData.r, pixelData.g, 1.0);
-            } else if(pixelData.g < color) {
-                gl_FragColor = vec4(pixelData.r, color, pixelData.g, 1.0);
-            } else if(pixelData.b < color) {
-                gl_FragColor = vec4(pixelData.r, pixelData.g, color, 1.0);
+            if(color > dst.r) {
+                src = vec4(color, dst.rgb);
+            } else if(color > dst.g) {
+                src = vec4(dst.r, color, dst.gb);
+            } else if(color > dst.b) {
+                src = vec4(dst.rg, color, dst.b);
+            } else if(color > dst.a) {
+                src = vec4(dst.rgb, color);
             }
         }
+
+        gl_FragColor = src.rgbr;
+
     } else {
-        gl_FragColor = pixelData;
+        discard;
     }
 }

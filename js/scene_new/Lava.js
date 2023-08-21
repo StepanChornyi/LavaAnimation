@@ -28,22 +28,36 @@ export default class Lava {
 
         this.circle3Center = new Vector(600, 600);
         this.spinRadius = 300;
-        this.angle = 0;
+        this.angle = -2.5;
+
+        this.circle4 = new SDF_Circle(gl);
+        this.circle4.setRadius(300);
+
+        this.circle4Center = new Vector(600, 600);
+        this.spinRadius2 = 280;
+        this.angle2 = -2.5;
+
 
         this.target1 = new RenderTexture(gl);
         this.target2 = new RenderTexture(gl);
 
-        this.image = new FullScreenImage(gl);
+        this.image = new FullScreenImage(gl, true);
 
         window.onmousemove = (evt) => this.circle.transform.setTranslation(evt.x, evt.y)
     }
 
     onUpdate() {
-        this.angle += 0.01;
+        this.angle += 0.001;
+        this.angle2 += 0.001;
 
         this.circle3.transform.setTranslation(
             this.circle3Center.x + Math.sin(this.angle) * this.spinRadius,
             this.circle3Center.y + Math.cos(this.angle) * this.spinRadius
+        )
+
+        this.circle4.transform.setTranslation(
+            this.circle4Center.x + Math.sin(this.angle2) * this.spinRadius2,
+            this.circle4Center.y + Math.cos(this.angle2) * this.spinRadius2
         )
     }
 
@@ -53,18 +67,18 @@ export default class Lava {
         this.onUpdate();
 
         const targets = [
-            this.target2.bindFramebuffer().clear(),
-            this.target1.bindFramebuffer().clear()
+            this.target2.bindFramebuffer(false).clear(),
+            this.target1.bindFramebuffer(false).clear()
         ]
 
         let lastActiveTarget = null;
 
-        const circles = [this.circle, this.circle2, this.circle3];
+        const circles = [this.circle, this.circle2, this.circle3,    this.circle4];
 
         for (let i = 0; i < circles.length; i++) {
             const [currentTarget, prevTarget] = targets;
             
-            currentTarget.bindFramebuffer().clear();
+            currentTarget.bindFramebuffer(false).clear();
 
             this.image.texture = prevTarget.texture;
             this.image.render(viewMatrix3x3);

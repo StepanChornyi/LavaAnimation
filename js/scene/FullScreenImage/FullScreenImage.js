@@ -1,35 +1,36 @@
 import vs from "./fullScreenImage.vs.glsl";
 import fs from "./fullScreenImage.fs.glsl";
+import fsTransparent from "./fullScreenImageTransparent.fs.glsl";
 import WEBGL_UTILS from "../../WebGL/WebglUtils";
 import Mesh from "../../WebGL/Mesh";
 import RectMesh from "../../RectMesh/RectMesh";
 
 const currentConfig = {
-    attribs: [
-        {
-            name: 'vertPosition',
-            size: 2
-        },
-        {
-            name: 'vertUv',
-            size: 2
-        }
-    ]
+  attribs: [
+    {
+      name: 'vertPosition',
+      size: 2
+    },
+    {
+      name: 'vertUv',
+      size: 2
+    }
+  ]
 };
 
 export default class FullScreenImage extends Mesh {
-  constructor(gl) {
-    super(gl, WEBGL_UTILS.createProgram(gl, vs, fs), currentConfig);
+  constructor(gl, isTransparent = false) {
+    super(gl, WEBGL_UTILS.createProgram(gl, vs, isTransparent ? fsTransparent : fs), currentConfig);
 
     this.texture = null;
 
     this.indices = RectMesh.RECT_INDICES;
 
     this.vertices = [
-        -1, 1, 0, 1,
-        1, 1, 1, 1,
-        1, -1, 1, 0,
-        -1, -1, 0, 0,
+      -1, 1, 0, 1,
+      1, 1, 1, 1,
+      1, -1, 1, 0,
+      -1, -1, 0, 0,
     ];
 
     this.drawBuffersData();
