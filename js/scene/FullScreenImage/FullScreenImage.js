@@ -19,8 +19,8 @@ const currentConfig = {
 };
 
 export default class FullScreenImage extends Mesh {
-  constructor(gl, isTransparent = false) {
-    super(gl, WEBGL_UTILS.createProgram(gl, vs, isTransparent ? fsTransparent : fs), currentConfig);
+  constructor(gl, isTransparent = false, fragmentShader) {
+    super(gl, WEBGL_UTILS.createProgram(gl, vs, fragmentShader || (isTransparent ? fsTransparent : fs)), currentConfig);
 
     this.texture = null;
 

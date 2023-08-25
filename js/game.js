@@ -1,6 +1,6 @@
 import { LoaderType, AssetManager, GameObject, AssetType, Asset, Debug } from 'black-engine';
 
-import Scene from './scene_new/scene';
+import Scene from './scene/scene';
 
 export class Game extends GameObject {
   constructor() {
