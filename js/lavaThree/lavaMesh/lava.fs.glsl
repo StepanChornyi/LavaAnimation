@@ -1,7 +1,7 @@
 #include <packing>
 
-uniform sampler2D depth0;
-uniform sampler2D depth1;
+uniform sampler2D groupTex0;
+// uniform sampler2D groupTex1;
 
 varying vec2 vUv;
 
@@ -12,7 +12,7 @@ float blendDist(float a, float b) {
 }
 
 void main() {
-    vec4 d0 = texture2D(depth0, vUv);
+    vec4 d0 = texture2D(groupTex0, vUv);
     // vec4 d1 = texture2D(depth1, vUv);
 
     // gl_FragColor = vec4(d0.xyz, 1.0);
@@ -22,7 +22,7 @@ void main() {
 
     float res = blendDist(blendDist(d0.r, d0.g), blendDist(d0.b, d0.a));
 
-    if(res < 2.0) {
+    if(res < 0.5) {
         gl_FragColor = vec4(vec3(1.0, 0.0, 0.0), 1.0);
     } else {
         res *= K_FACTOR_IVS;

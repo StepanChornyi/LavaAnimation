@@ -1,19 +1,19 @@
 #include <packing>
 
-uniform vec3 circleData;
+uniform vec3 dimensions;
 uniform vec4 channels;
 
 varying vec2 fragPos;
 
 void main() {
-    vec2 axisDist = abs(circleData.xy - fragPos);
-    float axisMinDist = circleData.z * 0.6666;
+    vec2 axisDist = abs(dimensions.xy - fragPos);
+    float axisMinDist = dimensions.z * 0.6666;
     float dist = 0.0;
 
     // if(axisDist.x < axisMinDist && axisDist.y < axisMinDist) {
-    //     dist = -circleData.z;
+    //     dist = -dimensions.z;
     // } else {
-    dist = distance(circleData.xy, fragPos) - circleData.z;
+    dist = distance(dimensions.xy, fragPos) - dimensions.z;
     // }
 
     if(dist < K_FACTOR) {

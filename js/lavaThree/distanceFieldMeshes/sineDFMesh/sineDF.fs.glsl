@@ -1,7 +1,7 @@
 #include <packing>
 
-uniform vec4 sineData0;
-uniform vec4 sineData1;
+uniform vec4 dimensions;
+uniform vec4 character;
 uniform vec4 channels;
 
 varying vec2 fragPos;
@@ -13,12 +13,12 @@ void main() {
     //     dist = -circleData.z;
     // } else {
 
-    float sineArg = fragPos.x - sineData0.x + sineData1.z;
+    float sineArg = fragPos.x - dimensions.x + character.z;
 
-    float sinVal = sin((sineArg) * sineData1.y);
+    float sinVal = sin((sineArg) * character.y);
 
-    // dist = abs(sineData0.y + sinVal * sineData0.w - fragPos.y) - sineData1.x;
-    dist = sineData0.y + sinVal * sineData0.w - fragPos.y - sineData1.x;
+    // dist = abs(dimensions.y + sinVal * dimensions.w - fragPos.y) - character.x;
+    dist = dimensions.y + sinVal * dimensions.w - fragPos.y - character.x;
 
     // }
 
