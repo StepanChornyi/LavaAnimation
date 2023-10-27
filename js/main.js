@@ -7,14 +7,9 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 
 const lavaThree = new LavaThree(document.getElementById('lava'));
 
-lavaThree.resize(window.innerWidth, window.innerHeight);
-
-window.addEventListener("resize", () => {
-    lavaThree.resize(window.innerWidth, window.innerHeight);
-});
-
 let startTime = null;
 let raf = null;
+let cachedSizeW = -1, cachedSizeH = -1;
 
 const loop = (time) => {
     if (startTime === null) {
@@ -26,6 +21,13 @@ const loop = (time) => {
     const dt = time - startTime;
 
     startTime = time;
+
+    if (cachedSizeW !== window.innerWidth || cachedSizeW !== window.innerHeight) {
+        cachedSizeW = window.innerWidth;
+        cachedSizeH = window.innerHeight;
+
+        lavaThree.resize(window.innerWidth, window.innerHeight);
+    }
 
     lavaThree.update(dt * 0.001, time * 0.001);
     lavaThree.render();
