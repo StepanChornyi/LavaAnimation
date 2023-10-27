@@ -31,35 +31,11 @@ export class LavaController {
         leftSine1.frequency = 0.02
         leftSine2.frequency = 0.005
 
-
-        // console.log(sineGroup);
-
-        // {
-        //     const myc = new CircleDFMesh();
-
-        //     myc.x = 300;
-        //     myc.y = 400;
-        //     myc.radius = 50;
-
-        //     sineGroup.add(myc, RENDER_CHANNELS.RED);
-        // }
-
-        // {
-        //     const myc = new CircleDFMesh();
-
-        //     myc.x = 300;
-        //     myc.y = 300;
-        //     myc.radius = 50;
-
-        //     sineGroup.add(myc, RENDER_CHANNELS.BLUE);
-        // }
-
-
-        const mouseCircle = this.mouseCircle = new RectDFMesh();
+        const mouseCircle = this.mouseCircle = new CircleDFMesh();
 
         mouseCircle.width = 500;
         mouseCircle.height = 300;
-        mouseCircle.radius = -5;
+        mouseCircle.radius = 300;
 
         sineGroup.add(mouseCircle, RENDER_CHANNELS.GREEN);
 
@@ -93,12 +69,12 @@ export class LavaController {
 
         leftSine0.x = leftSine1.x = leftSine2.x = 100;
         leftSine0.y = leftSine1.y = leftSine2.y = height * 0.5;
-        leftSine0.halfLength = leftSine1.halfLength = leftSine2.halfLength = height * 0.5;
+        leftSine0.halfLength = leftSine1.halfLength = leftSine2.halfLength = height;
         leftSine0.angle = leftSine1.angle = leftSine2.angle = Math.PI * 0.5;
 
         rightSine0.x = rightSine1.x = rightSine2.x = width - 100;
         rightSine0.y = rightSine1.y = rightSine2.y = height * 0.5;
-        rightSine0.halfLength = rightSine1.halfLength = rightSine2.halfLength = height * 0.5;
+        rightSine0.halfLength = rightSine1.halfLength = rightSine2.halfLength = height;
         rightSine0.angle = rightSine1.angle = rightSine2.angle = Math.PI * 0.5;
         rightSine0.scaleY = rightSine1.scaleY = rightSine2.scaleY = -1;
     }
