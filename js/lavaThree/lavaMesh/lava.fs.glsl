@@ -4,6 +4,8 @@ uniform sampler2D groupTex0;
 // uniform sampler2D groupTex1;
 
 varying vec2 vUv;
+varying vec3 fragColorFill;
+varying vec3 fragColorBg;
 
 float blendDist(float a, float b) {
     float h = clamp(0.5 + (b - a) * K_FACTOR_IVS_HALF, 0.0, 1.0);
@@ -23,10 +25,10 @@ void main() {
     float res = blendDist(blendDist(d0.r, d0.g), blendDist(d0.b, d0.a));
 
     if(res < 0.5) {
-        gl_FragColor = vec4(vec3(1.0, 0.0, 0.0), 1.0);
+        gl_FragColor = vec4(fragColorFill, 1.0);
     } else {
         res *= K_FACTOR_IVS;
 
-        gl_FragColor = vec4(vec3(1.0-res), 1.0);
+        gl_FragColor = vec4(fragColorBg, 1.0);
     }
 }

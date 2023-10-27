@@ -59,7 +59,7 @@ export class LavaController {
 
         mouseCircle.width = 500;
         mouseCircle.height = 300;
-        mouseCircle.radius = 50;
+        mouseCircle.radius = -5;
 
         sineGroup.add(mouseCircle, RENDER_CHANNELS.GREEN);
 
