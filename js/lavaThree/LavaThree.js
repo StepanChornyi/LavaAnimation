@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Fin from './fin/Fin';
 import MyCircle from './circle/MyCircle';
+import MySine from './sine/MySine';
 
 export class LavaThree {
     constructor(canvas) {
@@ -19,7 +20,7 @@ export class LavaThree {
             const myc = new MyCircle(new THREE.Vector3());
 
             myc.setPosition(300, 400);
-            myc.setRadius(10 + 50 * Math.random());
+            myc.setRadius(50);
 
             mycArr.push(myc);
             tmpScene.add(myc);
@@ -29,7 +30,7 @@ export class LavaThree {
             const myc = new MyCircle(new THREE.Vector3());
 
             myc.setPosition(300, 300);
-            myc.setRadius(10 + 50 * Math.random());
+            myc.setRadius(50);
 
             myc.material.uniforms.channels.value.set(0, 0, 1, 0);
 
@@ -37,7 +38,7 @@ export class LavaThree {
             tmpScene.add(myc);
         }
 
-        const myc2 = this.myc2 = new MyCircle(new THREE.Vector3(350, 350, 50));
+        const myc2 = this.myc2 = new MySine();
 
         myc2.material.uniforms.channels.value.set(0, 1, 0, 0);
 
@@ -55,7 +56,7 @@ export class LavaThree {
     }
 
     update(dt, time) {
-
+        this.myc2.onUpdate(dt);
     }
 
     render() {

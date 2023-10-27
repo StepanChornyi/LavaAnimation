@@ -8,7 +8,7 @@ import { setKFactor } from './LavaConfig';
 export default class Fin extends THREE.Mesh {
     constructor(depth0, depth1, cameraNear, cameraFar) {
         const material = new THREE.ShaderMaterial({
-            vertexShader,
+            vertexShader: setKFactor(vertexShader),
             fragmentShader: setKFactor(fragmentShader),
             uniforms: {
                 depth0: { value: depth0 },

@@ -15,8 +15,8 @@ void main() {
     vec4 d0 = texture2D(depth0, vUv);
     // vec4 d1 = texture2D(depth1, vUv);
 
-    gl_FragColor = vec4(d0.xyz, 1.0);
-    return;
+    // gl_FragColor = vec4(d0.xyz, 1.0);
+    // return;
 
     d0 = (vec4(1.0) - d0) * K_FACTOR;
 
@@ -27,6 +27,6 @@ void main() {
     } else {
         res *= K_FACTOR_IVS;
 
-        gl_FragColor = vec4(vec3(res), 1.0);
+        gl_FragColor = vec4(vec3(1.0-res), 1.0);
     }
 }

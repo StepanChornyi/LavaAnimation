@@ -1,18 +1,24 @@
 import * as THREE from 'three';
 
-import vertexShader from "./myCircle.vs.glsl";
-import fragmentShader from "./myCircle.fs.glsl";
+import vertexShader from "./mySine.vs.glsl";
+import fragmentShader from "./mySine.fs.glsl";
 import { setConfigToMaterial, setKFactor } from '../fin/LavaConfig';
-
+console.log(vertexShader);
 // console.log(TransformControls);
-export default class MyCircle extends THREE.Mesh {
-    constructor(circleData) {
+export default class MySine extends THREE.Mesh {
+    constructor(sineData) {
+
+        const halfLength = 1250;
+        const amplitude = 50;
+        const thickness = 20;
+        const frequency = 0.01;
+        const phaseShift = 0;
+
         const material = new THREE.ShaderMaterial({
-            vertexShader: setKFactor(vertexShader),
-            fragmentShader: setKFactor(fragmentShader),
-            uniforms: {
+            vertexShader, fragmentShader: setKFactor(fragmentShader), uniforms: {
                 textureSize: { value: new THREE.Vector2(10, 10) },
-                circleData: { value: circleData },
+                sineData0: { value: new THREE.Vector4(1, 1, halfLength, amplitude) },
+                sineData1: { value: new THREE.Vector4(thickness, frequency, phaseShift, 1) },
                 channels: { value: new THREE.Vector4(1, 0, 0, 0) },
             },
         });
@@ -21,31 +27,18 @@ export default class MyCircle extends THREE.Mesh {
     }
 
     setPosition(x, y) {
-        this.material.uniforms.circleData.value.x = x;
-        this.material.uniforms.circleData.value.y = y;
-    }
-
-    setRadius(r) {
-        this.material.uniforms.circleData.value.z = r;
+        this.material.uniforms.sineData0.value.x = x;
+        this.material.uniforms.sineData0.value.y = y;
     }
 
     onResize(width, height) {
         this.material.uniforms.textureSize.value.set(width, height);
     }
 
-    onUpdate(dt){
-        
+    onUpdate(dt) {
+        this.material.uniforms.sineData1.value.z += -100 * dt;
     }
 }
-
-function intColorToVec3(color) {
-    const r = (color >> 16) & 255;
-    const g = (color >> 8) & 255;
-    const b = color & 255;
-
-    return new THREE.Vector3(r / 255, g / 255, b / 255);
-}
-
 
 function createGeometry() {
     const geometry = new THREE.BufferGeometry();
