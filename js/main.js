@@ -1,27 +1,41 @@
-import { CanvasDriver, Input, Engine, StageScaleMode } from "black-engine";
-import { FPS_METER } from "./animationConfig";
-import { Game } from "./game";
+// import { CanvasDriver, Input, Engine, StageScaleMode } from "black-engine";
+// import { FPS_METER } from "./animationConfig";
+// import { Game } from "./game";
+import { LavaThree } from "./lavaThree/LavaThree";
 
 document.addEventListener('contextmenu', e => e.preventDefault());
 
-const engine = new Engine('container', Game, CanvasDriver, [Input]);
+const lavaThree = new LavaThree(document.getElementById('lava'));
 
-// Pause simulation when container loses focus
-engine.pauseOnBlur = false;
-engine.pauseOnHide = false;
-engine.viewport.isTransparent = true;
-engine.viewport.backgroundColor = 0x222222;
-engine.start();
-engine.stage.setSize(900, 500);
-engine.stage.scaleMode = StageScaleMode.LETTERBOX;
+lavaThree.resize(window.innerWidth, window.innerHeight);
 
-engine.start();
+window.addEventListener("resize", () => {
+    lavaThree.resize(window.innerWidth, window.innerHeight);
+});
 
-engine.stage.setSize(900, 500);
+let startTime = null;
+let raf = null;
 
-engine.stage.scaleMode = StageScaleMode.LETTERBOX;
+const loop = (time) => {
+    if (startTime === null) {
+        startTime = time;
+        raf = requestAnimationFrame(loop);
+        return;
+    }
 
-if (FPS_METER) {
+    const dt = time - startTime;
+
+    startTime = time;
+
+    lavaThree.update(dt * 0.001, time * 0.001);
+    lavaThree.render();
+
+    raf = requestAnimationFrame(loop);
+}
+
+raf = requestAnimationFrame(loop);
+
+if (true) {
     /* jshint ignore:start */
-    // (function () { var script = document.createElement('script'); script.onload = function () { var stats = new Stats(); document.body.appendChild(stats.dom); requestAnimationFrame(function loop() { stats.update(); requestAnimationFrame(loop) }); }; script.src = '//mrdoob.github.io/stats.js/build/stats.min.js'; document.head.appendChild(script); })()
+    (function () { var script = document.createElement('script'); script.onload = function () { var stats = new Stats(); document.body.appendChild(stats.dom); requestAnimationFrame(function loop() { stats.update(); requestAnimationFrame(loop) }); }; script.src = '//mrdoob.github.io/stats.js/build/stats.min.js'; document.head.appendChild(script); })()
 }
