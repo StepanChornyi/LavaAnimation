@@ -27,9 +27,8 @@ const colorCenterBot = intColorToArr(0x8717d1);;
 const colorSideBot = intColorToArr(0x2b17d1);
 const colorSideTop = intColorToArr(0xd100ff);
 
-const bgTopColor = intColorToArr(0x151111);
-const bgBotColor = intColorToArr(0x2e1607);
-
+const bgTopColor = intColorToArr(0x5b0434);
+const bgBotColor = intColorToArr(0x1b0d66);
 
 export const lavaPlaneGeometry = new THREE.BufferGeometry();
 
