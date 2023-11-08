@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import CircleDFMesh from './distanceFieldMeshes/circleDFMesh/CircleDFMesh';
 import SineDFMesh from './distanceFieldMeshes/sineDFMesh/SineDFMesh';
 import { RENDER_CHANNELS } from './distanceFieldMeshes/DFMesh';

@@ -1,4 +1,6 @@
-import * as THREE from 'three';
+import { Vector3 } from 'three/src/math/Vector3';
+import { BufferGeometry } from 'three/src/core/BufferGeometry';
+import { BufferAttribute } from 'three/src/core/BufferAttribute';
 
 export const K_FACTOR = 100;
 
@@ -20,10 +22,10 @@ export const intColorToArr = (color) => {
 export const intColorToVec3 = (color) => {
     const [r, g, b] = intColorToArr(color);
 
-    return new THREE.Vector3(r / 255, g / 255, b / 255);
+    return new Vector3(r / 255, g / 255, b / 255);
 }
 
-export const basePlaneGeometry = new THREE.BufferGeometry();
+export const basePlaneGeometry = new BufferGeometry();
 
 const vertices = new Float32Array([
     -1.0, -1.0, 0,
@@ -38,4 +40,4 @@ const indices = [
 ];
 
 basePlaneGeometry.setIndex(indices);
-basePlaneGeometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+basePlaneGeometry.setAttribute('position', new BufferAttribute(vertices, 3));

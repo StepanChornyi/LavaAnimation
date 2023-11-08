@@ -1,15 +1,18 @@
-import * as THREE from 'three';
+import { CustomBlending, MaxEquation, OneFactor } from 'three/src/constants';
+import { Vector4 } from 'three/src/math/Vector4';
+import { Mesh } from 'three/src/objects/Mesh';
+
 import { basePlaneGeometry } from '../LavaConfig';
 
-export default class DFMesh extends THREE.Mesh {
+export default class DFMesh extends Mesh {
     constructor(material) {
         super(basePlaneGeometry, material);
 
         material.depthTest = false;
-        material.blending = THREE.CustomBlending;
-        material.blendEquation = THREE.MaxEquation;
-        material.blendSrc = THREE.OneFactor;
-        material.blendDst = THREE.OneFactor;
+        material.blending = CustomBlending;
+        material.blendEquation = MaxEquation;
+        material.blendSrc = OneFactor;
+        material.blendDst = OneFactor;
     }
 
     setRenderChannel(renderChannel) {
@@ -29,8 +32,8 @@ export const RENDER_CHANNELS = {
 }
 
 const RENDER_CHANNELS_VECTORS = {
-    [RENDER_CHANNELS.RED]: new THREE.Vector4(1, 0, 0, 0),
-    [RENDER_CHANNELS.GREEN]: new THREE.Vector4(0, 1, 0, 0),
-    [RENDER_CHANNELS.BLUE]: new THREE.Vector4(0, 0, 1, 0),
-    [RENDER_CHANNELS.ALPHA]: new THREE.Vector4(0, 0, 0, 1),
+    [RENDER_CHANNELS.RED]: new Vector4(1, 0, 0, 0),
+    [RENDER_CHANNELS.GREEN]: new Vector4(0, 1, 0, 0),
+    [RENDER_CHANNELS.BLUE]: new Vector4(0, 0, 1, 0),
+    [RENDER_CHANNELS.ALPHA]: new Vector4(0, 0, 0, 1),
 };

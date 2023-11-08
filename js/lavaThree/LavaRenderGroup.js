@@ -1,10 +1,12 @@
-import * as THREE from 'three';
+import { Scene } from 'three/src/scenes/Scene';
+import { WebGLRenderTarget } from 'three/src/renderers/WebGLRenderTarget';
+
 import { RENDER_CHANNELS } from './distanceFieldMeshes/DFMesh';
 
 export default class LavaRenderGroup {
     constructor() {
-        this.renderTarget = new THREE.WebGLRenderTarget(10, 10, { depthBuffer: false });
-        this.scene = new THREE.Scene();
+        this.renderTarget = new WebGLRenderTarget(10, 10, { depthBuffer: false });
+        this.scene = new Scene();
         this.channels = {
             [RENDER_CHANNELS.RED]: [],
             [RENDER_CHANNELS.GREEN]: [],

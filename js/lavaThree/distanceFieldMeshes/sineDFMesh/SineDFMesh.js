@@ -1,4 +1,6 @@
-import * as THREE from 'three';
+import { ShaderMaterial } from 'three/src/materials/ShaderMaterial';
+import { Vector2 } from 'three/src/math/Vector2';
+import { Vector4 } from 'three/src/math/Vector4';
 
 import vs from "./sineDF.vs.glsl";
 import fs from "./sineDF.fs.glsl";
@@ -7,14 +9,14 @@ import { setKFactor } from '../../LavaConfig';
 
 export default class SineDFMesh extends DFMesh {
     constructor({ halfLength = 1000, amplitude = 50, thickness = 0, frequency = 0.01, phaseShift = 0 } = {}) {
-        const material = new THREE.ShaderMaterial({
+        const material = new ShaderMaterial({
             vertexShader: setKFactor(vs),
             fragmentShader: setKFactor(fs),
             uniforms: {
-                screenSize: { value: new THREE.Vector2() },
-                dimensions: { value: new THREE.Vector4() },
-                character: { value: new THREE.Vector4() },
-                channels: { value: new THREE.Vector4() },
+                screenSize: { value: new Vector2() },
+                dimensions: { value: new Vector4() },
+                character: { value: new Vector4() },
+                channels: { value: new Vector4() },
             },
         });
 

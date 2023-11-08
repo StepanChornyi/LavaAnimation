@@ -1,13 +1,17 @@
-import * as THREE from 'three';
+import { DoubleSide } from 'three/src/constants';
+import { Mesh } from 'three/src/objects/Mesh';
+import { ShaderMaterial } from 'three/src/materials/ShaderMaterial';
+import { BufferGeometry } from 'three/src/core/BufferGeometry';
+import { BufferAttribute } from 'three/src/core/BufferAttribute';
 
 import vertexShader from "./lava.vs.glsl";
 import fragmentShader from "./lava.fs.glsl";
 import { intColorToArr, setKFactor } from '../LavaConfig';
 
-export default class LavaMesh extends THREE.Mesh {
+export default class LavaMesh extends Mesh {
     constructor(groupTex0, groupTex1) {
 
-        const material = new THREE.ShaderMaterial({
+        const material = new ShaderMaterial({
             vertexShader: setKFactor(vertexShader),
             fragmentShader: setKFactor(fragmentShader),
             uniforms: {
@@ -17,7 +21,7 @@ export default class LavaMesh extends THREE.Mesh {
         });
 
         material.alphaToCoverage = true;
-        material.side = THREE.DoubleSide;
+        material.side = DoubleSide;
 
         super(lavaPlaneGeometry, material)
     }
@@ -31,7 +35,7 @@ const colorSideTop = intColorToArr(0xd100ff);
 const bgTopColor = intColorToArr(0x5b0434);
 const bgBotColor = intColorToArr(0x1b0d66);
 
-export const lavaPlaneGeometry = new THREE.BufferGeometry();
+export const lavaPlaneGeometry = new BufferGeometry();
 
 const vertices = new Float32Array([
     -1, 1, 0,
@@ -69,6 +73,6 @@ const indices = [
 
 lavaPlaneGeometry.setIndex(indices);
 
-lavaPlaneGeometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-lavaPlaneGeometry.setAttribute('colorFill', new THREE.BufferAttribute(colorFill, 3));
-lavaPlaneGeometry.setAttribute('colorBg', new THREE.BufferAttribute(colorBg, 3));
+lavaPlaneGeometry.setAttribute('position', new BufferAttribute(vertices, 3));
+lavaPlaneGeometry.setAttribute('colorFill', new BufferAttribute(colorFill, 3));
+lavaPlaneGeometry.setAttribute('colorBg', new BufferAttribute(colorBg, 3));

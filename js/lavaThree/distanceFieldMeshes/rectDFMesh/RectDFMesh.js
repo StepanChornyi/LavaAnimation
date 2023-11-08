@@ -1,4 +1,7 @@
-import * as THREE from 'three';
+import { ShaderMaterial } from 'three/src/materials/ShaderMaterial';
+import { Vector2 } from 'three/src/math/Vector2';
+import { Vector4 } from 'three/src/math/Vector4';
+
 import DFMesh from '../DFMesh';
 
 import vs from "./rectDF.vs.glsl";
@@ -7,14 +10,14 @@ import { setKFactor } from '../../LavaConfig';
 
 export default class RectDFMesh extends DFMesh {
     constructor() {
-        const material = new THREE.ShaderMaterial({
+        const material = new ShaderMaterial({
             vertexShader: setKFactor(vs),
             fragmentShader: setKFactor(fs),
             uniforms: {
-                screenSize: { value: new THREE.Vector2() },
-                dimensions: { value: new THREE.Vector4() },
+                screenSize: { value: new Vector2() },
+                dimensions: { value: new Vector4() },
                 radius: { value: 0 },
-                channels: { value: new THREE.Vector4() },
+                channels: { value: new Vector4() },
             },
         });
 

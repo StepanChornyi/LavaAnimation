@@ -1,15 +1,18 @@
-import * as THREE from 'three';
+import { PerspectiveCamera } from 'three/src/cameras/PerspectiveCamera';
+import { WebGLRenderer } from 'three/src/renderers/WebGLRenderer';
+import { Scene } from 'three/src/scenes/Scene';
+
 import LavaMesh from './lavaMesh/LavaMesh';
 import { LavaController } from './LavaController';
 
 export class LavaThree {
     constructor(canvas) {
-        this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-        this.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 1000);
+        this.renderer = new WebGLRenderer({ canvas, antialias: true });
+        this.camera = new PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 1000);
 
         const lavaController = this.lavaController = new LavaController();
 
-        const scene = this.scene = new THREE.Scene();
+        const scene = this.scene = new Scene();
 
         scene.add(new LavaMesh(...lavaController.textures));
     }
