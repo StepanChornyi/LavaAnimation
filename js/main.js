@@ -1,9 +1,10 @@
-// import { CanvasDriver, Input, Engine, StageScaleMode } from "black-engine";
-// import { FPS_METER } from "./animationConfig";
-// import { Game } from "./game";
 import { LavaThree } from "./lavaThree/LavaThree";
 
+let isFocused = true;
+
 document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('blur', () => (isFocused = false));
+document.addEventListener('focus', () => (isFocused = true));
 
 const lavaThree = new LavaThree(document.getElementById('lava'));
 
@@ -28,9 +29,10 @@ const loop = (time) => {
 
         lavaThree.resize(window.innerWidth, window.innerHeight);
     }
-
-    lavaThree.update(dt * 0.001, time * 0.001);
-    lavaThree.render();
+    if (isFocused) {
+        lavaThree.update(Math.min(dt * 0.001, 3 / 60), time * 0.001);
+        lavaThree.render();
+    }
 
     raf = requestAnimationFrame(loop);
 }

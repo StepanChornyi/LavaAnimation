@@ -9,70 +9,73 @@ import fragmentShader from "./lava.fs.glsl";
 import { intColorToArr, setKFactor } from '../LavaConfig';
 
 export default class LavaMesh extends Mesh {
-    constructor(groupTex0, groupTex1) {
+    constructor(colors, groupTex0, groupTex1, groupTex2) {
 
         const material = new ShaderMaterial({
             vertexShader: setKFactor(vertexShader),
             fragmentShader: setKFactor(fragmentShader),
             uniforms: {
                 groupTex0: { value: groupTex0 },
-                groupTex1: { value: groupTex1 }
+                groupTex1: { value: groupTex1 },
+                groupTex2: { value: groupTex2 },
+
+                text0FlipY: { value: groupTex0.flipY },
+                text1FlipY: { value: groupTex1.flipY },
+                text2FlipY: { value: groupTex2.flipY },
             },
         });
 
+        material.transparent = true;
         material.alphaToCoverage = true;
         material.side = DoubleSide;
 
-        super(lavaPlaneGeometry, material)
+        super(createLavaGeometry(colors), material)
     }
 }
 
-const colorCenterTop = intColorToArr(0xff1f00);;
-const colorCenterBot = intColorToArr(0x8717d1);;
-const colorSideBot = intColorToArr(0x2b17d1);
-const colorSideTop = intColorToArr(0xd100ff);
+function createLavaGeometry(colors) {
+    const lavaPlaneGeometry = new BufferGeometry();
 
-const bgTopColor = intColorToArr(0x5b0434);
-const bgBotColor = intColorToArr(0x1b0d66);
+    const vertices = new Float32Array([
+        -1, 1, 0,
+        1, 1, 0,
+        -1, 0, 0,
+        1, 0, 0,
+        -1, -1, 0,
+        1, -1, 0
+    ]);
 
-export const lavaPlaneGeometry = new BufferGeometry();
+    const indices = [
+        0, 1, 2,
+        1, 2, 3,
+        2, 3, 4,
+        3, 4, 5,
+    ];
 
-const vertices = new Float32Array([
-    -1, 1, 0,
-    0, 1, 0,
-    1, 1, 0,
-    1, -1, 0,
-    0, -1, 0,
-    -1, -1, 0,
-]);
+    const colorFill = new Float32Array([
+        ...colors.edge,
+        ...colors.edge,
+        ...colors.center,
+        ...colors.center,
+        ...colors.edge,
+        ...colors.edge,
+    ]);
 
-const colorFill = new Float32Array([
-    ...colorSideTop,
-    ...colorCenterTop,
-    ...colorSideTop,
-    ...colorSideBot,
-    ...colorCenterBot,
-    ...colorSideBot,
-]);
+    const colorBg = new Float32Array([
+        ...colors.glow,
+        ...colors.glow,
+        ...colors.glow,
+        ...colors.glow,
+        ...colors.glow,
+        ...colors.glow,
+    ]);
 
-const colorBg = new Float32Array([
-    ...bgTopColor,
-    ...bgTopColor,
-    ...bgTopColor,
-    ...bgBotColor,
-    ...bgBotColor,
-    ...bgBotColor,
-]);
 
-const indices = [
-    0, 1, 4,
-    0, 4, 5,
-    1, 2, 3,
-    1, 3, 4,
-];
+    lavaPlaneGeometry.setIndex(indices);
 
-lavaPlaneGeometry.setIndex(indices);
+    lavaPlaneGeometry.setAttribute('position', new BufferAttribute(vertices, 3));
+    lavaPlaneGeometry.setAttribute('colorFill', new BufferAttribute(colorFill, 3));
+    lavaPlaneGeometry.setAttribute('colorGlow', new BufferAttribute(colorBg, 3));
 
-lavaPlaneGeometry.setAttribute('position', new BufferAttribute(vertices, 3));
-lavaPlaneGeometry.setAttribute('colorFill', new BufferAttribute(colorFill, 3));
-lavaPlaneGeometry.setAttribute('colorBg', new BufferAttribute(colorBg, 3));
+    return lavaPlaneGeometry;
+}

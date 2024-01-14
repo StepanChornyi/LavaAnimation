@@ -13,6 +13,14 @@ export default class LavaRenderGroup {
             [RENDER_CHANNELS.BLUE]: [],
             [RENDER_CHANNELS.ALPHA]: [],
         }
+
+        this.channelsArr = [];
+
+        for (const key in this.channels) {
+            if (Object.hasOwnProperty.call(this.channels, key)) {
+                this.channelsArr.push(this.channels[key]);
+            }
+        }
     }
 
     add(dfMesh, channel = RENDER_CHANNELS.RED) {
