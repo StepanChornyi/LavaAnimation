@@ -5,6 +5,9 @@ import { RENDER_CHANNELS } from './distanceFieldMeshes/DFMesh';
 
 export default class LavaRenderGroup {
     constructor() {
+        this.width = 10;
+        this.height = 10;
+
         this.renderTarget = new WebGLRenderTarget(10, 10, { depthBuffer: false });
         this.scene = new Scene();
         this.channels = {
@@ -36,6 +39,9 @@ export default class LavaRenderGroup {
     onUpdate(dt) { }
 
     onResize(width, height) {
+        this.width = width;
+        this.height = height;
+
         this.renderTarget.setSize(width, height);
 
         for (let i = 0; i < this.scene.children.length; i++) {

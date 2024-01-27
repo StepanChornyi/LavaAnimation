@@ -92,10 +92,6 @@ class SideBarsGroup extends LavaRenderGroup {
         leftSine1.frequency = rightSine1.frequency = 0.025 * this.config.frequencyFactor;
         leftSine2.frequency = rightSine2.frequency = 0.01 * this.config.frequencyFactor;
 
-        leftSine0.amplitude = rightSine0.amplitude = 40 * this.config.amplitudeFactor;
-        leftSine1.amplitude = rightSine1.amplitude = 30 * this.config.amplitudeFactor;
-        leftSine2.amplitude = rightSine2.amplitude = 50 * this.config.amplitudeFactor;
-
         leftSine0.phaseShift = 100 * Math.random();
         leftSine1.phaseShift = 100 * Math.random();
         leftSine2.phaseShift = 100 * Math.random();
@@ -121,16 +117,22 @@ class SideBarsGroup extends LavaRenderGroup {
         const { leftSine0, leftSine1, leftSine2 } = this;
         const { rightSine0, rightSine1, rightSine2 } = this;
 
+        const ampFactor = heightScaleFactor(height);
+
         leftSine0.x = leftSine1.x = leftSine2.x = width * 0.5;
-        leftSine0.y = leftSine1.y = leftSine2.y = this.config.offsetY;
+        leftSine0.y = leftSine1.y = leftSine2.y = this.config.offsetY * ampFactor;
         leftSine0.halfLength = leftSine1.halfLength = leftSine2.halfLength = width;
         leftSine0.angle = leftSine1.angle = leftSine2.angle = Math.PI;
 
         rightSine0.x = rightSine1.x = rightSine2.x = width * 0.5;
-        rightSine0.y = rightSine1.y = rightSine2.y = height - this.config.offsetY;
+        rightSine0.y = rightSine1.y = rightSine2.y = height - this.config.offsetY * ampFactor;
         rightSine0.halfLength = rightSine1.halfLength = rightSine2.halfLength = width;
         rightSine0.angle = rightSine1.angle = rightSine2.angle = Math.PI;
         rightSine0.scaleY = rightSine1.scaleY = rightSine2.scaleY = -1;
+
+        leftSine0.amplitude = rightSine0.amplitude = 40 * this.config.amplitudeFactor * ampFactor;
+        leftSine1.amplitude = rightSine1.amplitude = 30 * this.config.amplitudeFactor * ampFactor;
+        leftSine2.amplitude = rightSine2.amplitude = 50 * this.config.amplitudeFactor * ampFactor;
     }
 }
 
@@ -141,6 +143,11 @@ const sign = (v) => (v < 0 ? -1 : 1);
 const rndSign = () => sign(rnd() - 0.5);
 const rndBtw = (a, b) => lerp(a, b, rnd());
 const rndPick = (arr) => arr[Math.round(arr.length * rnd()) % arr.length];
+
+
+const baseHeight = 1100;
+
+const heightScaleFactor = (height) => height / baseHeight;
 
 function easeInQuad(x) {
     return x * x;
@@ -172,8 +179,8 @@ class BubblesGroup extends LavaRenderGroup {
 
             // const isUp = Math.random() < 0.5;
 
-            b.startY = this.height + 300 - config.offsetY;
-            b.endY = b.startY - this.height * config.bubbleHeightFactor;
+            b.startY = () => (this.height + 200 - config.offsetY);
+            b.endY = () => (b.startY() - this.height * config.bubbleHeightFactor);
 
             b.t = rnd();
 
@@ -221,7 +228,7 @@ class BubblesGroup extends LavaRenderGroup {
 
 
             b.x += scroll * dt;
-            b.y = lerp(b.startY, b.endY, b.t);
+            b.y = lerp(b.startY(), b.endY(), b.t);
             b.s = lerp(1, -8, easeInQuad(easeInQuad(b.t)));
         }
     }
