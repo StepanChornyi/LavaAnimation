@@ -22,7 +22,7 @@ export class LavaParallaxController {
         this.wheelScroll = 0;
 
         window.addEventListener('wheel', (event) => {
-            this.wheelScroll = event.wheelDelta * config.parallaxFactor * 0.5;
+            this.wheelScroll = event.wheelDelta * config.parallaxFactor * 0.2;
         });
     }
 
