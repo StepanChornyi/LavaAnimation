@@ -16,28 +16,28 @@ import * as THREE from 'three';
 import FullScreenImage from './fullScreenImage/FullScreenImage';
 
 function setColor(element, prop, color) {
-  element.style[prop] = intToRGBA(color)
+    element.style[prop] = intToRGBA(color)
 }
 
 function getColor(element, prop) {
-  const color = element.style[prop];
+    const color = element.style[prop];
 
-  if (!color || color.indexOf("rgb(") === -1)
-    return 0x000000;
+    if (!color || color.indexOf("rgb(") === -1)
+        return 0x000000;
 
-  const [r, g, b] = color.split("rgb(")[1].split(")")[0].split(", ").map((v) => +v);
+    const [r, g, b] = color.split("rgb(")[1].split(")")[0].split(", ").map((v) => +v);
 
-  const hex = r << 16 | g << 8 | b;
+    const hex = r << 16 | g << 8 | b;
 
-  return hex;
+    return hex;
 }
 
 function intToRGBA(color, alpha = 1) {
-  const r = (color >> 16) & 255;
-  const g = (color >> 8) & 255;
-  const b = color & 255;
+    const r = (color >> 16) & 255;
+    const g = (color >> 8) & 255;
+    const b = color & 255;
 
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 
@@ -131,8 +131,7 @@ export class LavaThree {
         for (let i = 0; i < this.lavaControllers.length; i++)
             this.lavaControllers[i].render(renderer, camera);
 
-
-        renderer.setClearColor( getColor(this.renderer.domElement, 'color'), 1)
+        renderer.setClearColor(getColor(this.renderer.domElement, 'color'), 1)
         renderer.setRenderTarget(this.renderTarget);
         renderer.render(this.lavaScene, camera);
 

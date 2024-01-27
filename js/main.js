@@ -23,7 +23,7 @@ const loop = (time) => {
 
     startTime = time;
 
-    if (cachedSizeW !== window.innerWidth || cachedSizeW !== window.innerHeight) {
+    if (cachedSizeW !== window.innerWidth || cachedSizeH !== window.innerHeight) {
         cachedSizeW = window.innerWidth;
         cachedSizeH = window.innerHeight;
 

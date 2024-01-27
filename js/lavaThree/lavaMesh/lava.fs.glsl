@@ -39,7 +39,7 @@ void main() {
     float lavaDist1 = blendDist(getTexDist(groupTex1, text1FlipY), getTexDist(groupTex2, text2FlipY));
     float lavaDist = blendDist(getTexDist(groupTex0, text0FlipY), lavaDist1);
 
-    float fadeDist = 3.0;
+    float fadeDist = 1.5;
     float minLavaDist = 0.5;
 
     // float glowSize = 1.5;

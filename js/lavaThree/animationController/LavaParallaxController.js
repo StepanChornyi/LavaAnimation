@@ -136,14 +136,12 @@ class SideBarsGroup extends LavaRenderGroup {
     }
 }
 
-
 const lerp = (a, b, t) => (a + (b - a) * t);
 const rnd = () => Math.random();
 const sign = (v) => (v < 0 ? -1 : 1);
 const rndSign = () => sign(rnd() - 0.5);
 const rndBtw = (a, b) => lerp(a, b, rnd());
 const rndPick = (arr) => arr[Math.round(arr.length * rnd()) % arr.length];
-
 
 const baseHeight = 1100;
 
@@ -162,7 +160,6 @@ class BubblesGroup extends LavaRenderGroup {
 
         this.config = config;
 
-
         this.scrollOffset = 200;
 
         let bubbleOffsetX = config.bubbleOffsetX;
@@ -174,29 +171,16 @@ class BubblesGroup extends LavaRenderGroup {
         for (let i = 0; i < bubblesCount; i++) {
             const b = new BubbleAnim();
 
-            // b.x = rndPick([-200, this.width + 200]);
-            // b.y = this.height * rnd();
-
-            // const isUp = Math.random() < 0.5;
-
             b.startY = () => (this.height + 200 - config.offsetY);
             b.endY = () => (b.startY() - this.height * config.bubbleHeightFactor);
 
             b.t = rnd();
 
-            // b.x = this.width * rnd();
-            // b.y = isUp ? -this.height * rnd() : this.height + this.height * rnd();
             b.y = this.height * 0.5;
             b.x = -this.scrollOffset + bubbleOffsetX * (i + rndBtw(-0.3, 0.3));
             b.radius = rndBtw(20, 60) * config.bubbleScale;
 
-            // b.vx = 0//rndBtw(100, 200) * sign(this.width * 0.5 - b.x);
-            // b.vy = isUp ? 100 : -100;
-            // b.gravity = isUp ? 50 : -50;
-
             this.add(b, [RENDER_CHANNELS.RED, RENDER_CHANNELS.GREEN, RENDER_CHANNELS.BLUE, RENDER_CHANNELS.ALPHA][i % 4]);
-
-            // [RENDER_CHANNELS.RED, RENDER_CHANNELS.GREEN, RENDER_CHANNELS.BLUE, RENDER_CHANNELS.ALPHA]
         }
     }
 

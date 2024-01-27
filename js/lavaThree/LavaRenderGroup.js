@@ -26,6 +26,20 @@ export default class LavaRenderGroup {
         }
     }
 
+    clear() {
+        for (let i = 0; i < this.channelsArr.length; i++) {
+            const meshes = this.channelsArr[i];
+
+            for (let j = 0; j < meshes.length; j++) {
+                this.scene.remove(meshes[j])
+
+                meshes[j].material.dispose();
+            }
+
+            meshes.splice(0);
+        }
+    }
+
     add(dfMesh, channel = RENDER_CHANNELS.RED) {
         dfMesh.setRenderChannel(channel);
 
