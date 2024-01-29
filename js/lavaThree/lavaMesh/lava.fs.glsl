@@ -33,7 +33,7 @@ float getTexDist(sampler2D tex, bool flipY) {
 }
 
 void main() {
-    // gl_FragColor = vec4(texture2D(groupTex0, vUv).xyz, 1.0);
+    // gl_FragColor = vec4(texture2D(groupTex1, vUv).xyz, 1.0);
     // return;
 
     float lavaDist1 = blendDist(getTexDist(groupTex1, text1FlipY), getTexDist(groupTex2, text2FlipY));

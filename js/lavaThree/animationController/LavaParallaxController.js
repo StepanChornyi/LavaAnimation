@@ -4,6 +4,7 @@ import { RENDER_CHANNELS } from '../distanceFieldMeshes/DFMesh';
 import RectDFMesh from '../distanceFieldMeshes/rectDFMesh/RectDFMesh';
 import { Vector2 } from 'three/src/math/Vector2';
 import LavaRenderGroup from '../LavaRenderGroup';
+import MergedCirclesDFMesh from '../distanceFieldMeshes/mergedCirclesDFMesh/MergedCirclesDFMesh';
 
 export class LavaParallaxController {
     constructor(config) {
@@ -164,29 +165,49 @@ class BubblesGroup extends LavaRenderGroup {
 
         let bubbleOffsetX = config.bubbleOffsetX;
         const fullWidth = this.width + this.scrollOffset * 2;
-        const bubblesCount = Math.ceil(Math.round(fullWidth / bubbleOffsetX) / 4) * 4;
+        let bubblesCount = Math.ceil(Math.round(fullWidth / bubbleOffsetX) / 4) * 4;
+
+        bubblesCount = bubblesCount % 2 === 0 ? bubblesCount : ++bubblesCount;
 
         bubbleOffsetX = fullWidth / bubblesCount;
 
-        for (let i = 0; i < bubblesCount; i++) {
+        this.bubbles = [];
+
+        for (let i = 0, bPrev, channelCounter = 0; i < bubblesCount; i++) {
             const b = new BubbleAnim();
 
-            b.startY = () => (this.height + 200 - config.offsetY);
-            b.endY = () => (b.startY() - this.height * config.bubbleHeightFactor);
+            b.radius = rndBtw(20, 60) * config.bubbleScale;
+
+            b.startY = () => (this.height + b.radius + 200 - config.offsetY);
+            b.endY = () => (b.startY() - this.height  * config.bubbleHeightFactor);
 
             b.t = rnd();
 
             b.y = this.height * 0.5;
             b.x = -this.scrollOffset + bubbleOffsetX * (i + rndBtw(-0.3, 0.3));
-            b.radius = rndBtw(20, 60) * config.bubbleScale;
 
-            this.add(b, [RENDER_CHANNELS.RED, RENDER_CHANNELS.GREEN, RENDER_CHANNELS.BLUE, RENDER_CHANNELS.ALPHA][i % 4]);
+            this.bubbles.push(b);
+
+            if (i % 2 === 0) {
+                bPrev = b;
+            } else {
+                const mergedCircles = new MergedCirclesDFMesh(bPrev, b);
+                const channel = [RENDER_CHANNELS.RED, RENDER_CHANNELS.GREEN, RENDER_CHANNELS.BLUE, RENDER_CHANNELS.ALPHA][channelCounter % 4]
+
+                channelCounter++;
+
+                this.add(mergedCircles, channel);
+            }
         }
     }
 
     onUpdate(dt, scroll) {
+        this.updateBubbles(dt, this.bubbles, scroll);
+
         for (let i = 0; i < this.channelsArr.length; i++) {
-            this.updateBubbles(dt, this.channelsArr[i], scroll);
+            for (let j = 0; j < this.channelsArr[i].length; j++) {
+                this.channelsArr[i][j].onUpdate();
+            }
         }
     }
 

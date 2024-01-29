@@ -22,6 +22,10 @@ export default class DFMesh extends Mesh {
     onResize(width, height) {
         this.material.uniforms.screenSize.value.set(width, height);
     }
+
+    onUpdate(){
+        
+    }
 }
 
 export const RENDER_CHANNELS = {

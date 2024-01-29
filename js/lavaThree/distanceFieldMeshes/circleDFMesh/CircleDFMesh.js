@@ -27,26 +27,46 @@ export default class CircleDFMesh extends DFMesh {
     }
 
     get x() {
-        return this._dimensions.x;
+        return this.dimensions.x;
     }
 
     set x(val) {
-        this._dimensions.x = val;
+        this.dimensions.x = val;
     }
 
     get y() {
-        return this._dimensions.y;
+        return this.dimensions.y;
     }
 
     set y(val) {
-        this._dimensions.y = val;
+        this.dimensions.y = val;
     }
 
     get radius() {
-        return this._dimensions.z;
+        return this.dimensions.z;
     }
 
     set radius(val) {
-        this._dimensions.z = val;
+        this.dimensions.z = val;
+    }
+
+    get left() {
+        return this.dimensions.x - Math.max(0, this.dimensions.z);
+    }
+
+    get right() {
+        return this.dimensions.x + Math.max(0, this.dimensions.z);
+    }
+
+    get top() {
+        return this.dimensions.y - Math.max(0, this.dimensions.z);
+    }
+
+    get bottom() {
+        return this.dimensions.y + Math.max(0, this.dimensions.z);
+    }
+
+    get dimensions() {
+        return this._dimensions;
     }
 }

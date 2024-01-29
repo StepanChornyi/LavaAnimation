@@ -71,7 +71,7 @@ export class LavaThree {
             offsetY: 0,
             bubbleOffsetX: 100,
             bubbleScale: 3,
-            bubbleHeightFactor: 0.8
+            bubbleHeightFactor: 1.2
         });
 
         const lavaMesh1 = new LavaMesh({
@@ -87,7 +87,7 @@ export class LavaThree {
             offsetY: 100,
             bubbleOffsetX: 50,
             bubbleScale: 2,
-            bubbleHeightFactor: 0.7
+            bubbleHeightFactor: 1
         });
 
         const lavaMesh2 = new LavaMesh({
@@ -103,7 +103,7 @@ export class LavaThree {
             offsetY: 200,
             bubbleOffsetX: 20,
             bubbleScale: 0.5,
-            bubbleHeightFactor: 0.5
+            bubbleHeightFactor: 0.6
         });
 
         const lavaMesh3 = new LavaMesh({
